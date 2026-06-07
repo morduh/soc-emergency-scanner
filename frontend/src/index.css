@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CSS Custom Properties — Shadcn-compatible dark theme tokens
+───────────────────────────────────────────────────────────────────────────── */
+:root {
+  --background:        220 14% 4%;    /* slate-950 */
+  --foreground:        210 40% 96%;   /* slate-100 */
+  --card:              222 14% 8%;    /* slate-900 */
+  --card-foreground:   210 40% 96%;
+  --popover:           222 14% 8%;
+  --popover-foreground: 210 40% 96%;
+  --primary:           0   72% 51%;   /* neon-red */
+  --primary-foreground: 0 0% 100%;
+  --secondary:         215 14% 15%;   /* slate-800 */
+  --secondary-foreground: 210 40% 96%;
+  --muted:             215 14% 11%;
+  --muted-foreground:  215 16% 47%;
+  --accent:            142 76% 36%;   /* neon-green accent */
+  --accent-foreground: 0 0% 100%;
+  --destructive:       0 63% 31%;
+  --destructive-foreground: 0 0% 100%;
+  --border:            215 14% 15%;
+  --input:             215 14% 15%;
+  --ring:              0 72% 51%;
+  --radius:            0.5rem;
+
+  /* Neon glow palette */
+  --neon-red:          #ef4444;
+  --neon-red-glow:     #ef444480;
+  --neon-orange:       #f97316;
+  --neon-orange-glow:  #f9731680;
+  --neon-green:        #22c55e;
+  --neon-green-glow:   #22c55e80;
+  --neon-blue:         #3b82f6;
+  --neon-blue-glow:    #3b82f680;
+  --neon-cyan:         #06b6d4;
+  --neon-cyan-glow:    #06b6d480;
+  --neon-purple:       #a855f7;
+  --neon-purple-glow:  #a855f780;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Base Reset & Body
+───────────────────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+code, pre, .mono {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Scrollbar Styling
+───────────────────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: hsl(var(--muted)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--secondary)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(215, 14%, 25%); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Keyframe Animations
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Pulse glow for the OFFLINE badge */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px 1px var(--neon-green-glow), 0 0 8px 2px var(--neon-green-glow);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 12px 4px var(--neon-green-glow), 0 0 24px 8px var(--neon-green-glow);
+    opacity: 0.85;
+  }
+}
+
+/* Danger pulse for HIGH risk */
+@keyframes danger-pulse {
+  0%, 100% {
+    box-shadow: 0 0 6px 2px var(--neon-red-glow), 0 0 16px 4px var(--neon-red-glow);
+  }
+  50% {
+    box-shadow: 0 0 20px 8px var(--neon-red-glow), 0 0 40px 12px var(--neon-red-glow);
+  }
+}
+
+/* Shimmer progress bar */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* Timeline node pulse */
+@keyframes node-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.3); opacity: 0.7; }
+}
+
+/* Fade in from bottom */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scan line sweep */
+@keyframes scan-sweep {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Spinner rotation */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Data stream ticker */
+@keyframes data-ticker {
+  0%   { opacity: 0.3; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+/* Flicker for terminal text */
+@keyframes flicker {
+  0%, 19.9%, 22%, 62.9%, 64%, 64.9%, 70%, 100% { opacity: 1; }
+  20%,21.9%,63%,63.9%,65%,69.9%               { opacity: 0.6; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Utility Classes
+───────────────────────────────────────────────────────────────────────────── */
+
+.animate-pulse-glow   { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-danger-pulse { animation: danger-pulse 1.5s ease-in-out infinite; }
+.animate-node-pulse   { animation: node-pulse 2s ease-in-out infinite; }
+.animate-fade-in-up   { animation: fade-in-up 0.5s ease-out forwards; }
+.animate-spin-slow    { animation: spin-slow 1.5s linear infinite; }
+.animate-data-ticker  { animation: data-ticker 1.2s ease-in-out infinite; }
+.animate-flicker      { animation: flicker 3s linear infinite; }
+
+/* Shimmer progress bar */
+.shimmer-bar {
+  background: linear-gradient(
+    90deg,
+    #1e293b 0%,
+    #22c55e 40%,
+    #4ade80 50%,
+    #22c55e 60%,
+    #1e293b 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+}
+
+/* Neon glow text utilities */
+.text-glow-red    { text-shadow: 0 0 10px var(--neon-red),    0 0 30px var(--neon-red-glow); }
+.text-glow-green  { text-shadow: 0 0 10px var(--neon-green),  0 0 30px var(--neon-green-glow); }
+.text-glow-cyan   { text-shadow: 0 0 10px var(--neon-cyan),   0 0 30px var(--neon-cyan-glow); }
+.text-glow-orange { text-shadow: 0 0 10px var(--neon-orange), 0 0 30px var(--neon-orange-glow); }
+
+/* Border glow utilities */
+.border-glow-red    { box-shadow: 0 0 0 1px var(--neon-red),    0 0 20px var(--neon-red-glow); }
+.border-glow-green  { box-shadow: 0 0 0 1px var(--neon-green),  0 0 20px var(--neon-green-glow); }
+.border-glow-orange { box-shadow: 0 0 0 1px var(--neon-orange), 0 0 20px var(--neon-orange-glow); }
+.border-glow-cyan   { box-shadow: 0 0 0 1px var(--neon-cyan),   0 0 20px var(--neon-cyan-glow); }
+
+/* Glass morphism card */
+.glass-card {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+/* RTL text block for Hebrew content */
+.rtl-text {
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: embed;
+}
+
+/* Scan line overlay effect */
+.scan-line::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Grid background */
+.cyber-grid {
+  background-image:
+    linear-gradient(rgba(30, 41, 59, 0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.5) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Gradient border effect */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, #ef4444, #3b82f6, #22c55e);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Staggered animation delay utilities */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* Hebrew font support enhancement */
+:lang(he), .lang-he {
+  font-family: 'Inter', 'Arial Hebrew', 'Times New Roman', sans-serif;
+  line-height: 1.8;
+}
