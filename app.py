@@ -24,6 +24,8 @@ import mimetypes
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
+import winreg
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Optional
 
 import webview
@@ -678,6 +680,227 @@ class CyberAPI:
     # Public: Start Emergency Scan
     # ------------------------------------------------------------------
 
+    def _scan_registry_persistence(self) -> list[tuple[int, list[str], str]]:
+        """
+        Scan HKCU and HKLM Run/RunOnce keys for lab indicators.
+        """
+        registry_hits = []
+        lab_indicators = ["budget", "myflag#", "nc.exe"]
+        keys_to_check = [
+            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run"),
+            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\RunOnce"),
+            (winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\Run"),
+            (winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\RunOnce"),
+        ]
+
+        for hkey, subkey in keys_to_check:
+            try:
+                with winreg.OpenKey(hkey, subkey, 0, winreg.KEY_READ) as key:
+                    i = 0
+                    while True:
+                        try:
+                            value_name, value_data, _ = winreg.EnumValue(key, i)
+                            i += 1
+                            data_lower = str(value_data).lower()
+                            if any(ind in data_lower for ind in lab_indicators):
+                                prefix = "HKCU" if hkey == winreg.HKEY_CURRENT_USER else "HKLM"
+                                virtual_path = f"{prefix}\\{subkey}\\{value_name} -> {value_data}"
+                                justifications = ["Suspicious persistence entry found in Registry Run keys matching lab indicators (+100 points)"]
+                                registry_hits.append((100, justifications, virtual_path))
+                        except OSError:
+                            break
+            except OSError:
+                pass
+
+        return registry_hits
+
+    def run_bank_lab_preset(self) -> str:
+        """
+        Execute a comprehensive recursive directory traversal across 8 high-value forensic lab locations
+        and run registry persistence auditing.
+        """
+        targets = [
+            os.path.expandvars(r"%USERPROFILE%\Downloads"),
+            os.path.expandvars(r"%USERPROFILE%\Desktop"),
+            os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache"),
+            r"C:\Windows\System32\Tasks",
+            r"C:\Windows\System32\Winevt\Logs",
+            os.path.expandvars(r"%USERPROFILE%\AppData\Local\Temp"),
+            r"C:\Windows\Temp",
+            os.path.expandvars(r"%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"),
+        ]
+
+        scored_files: list[tuple[int, list[str], str]] = []
+        skipped = 0
+        total_files_found   = 0
+        total_folders_found = 0
+
+        for folder_path in targets:
+            if not os.path.exists(folder_path):
+                continue
+            try:
+                for root, dirs, files in os.walk(folder_path, followlinks=False):
+                    total_folders_found += 1
+                    dirs[:] = [
+                        d for d in dirs
+                        if d.lower() not in {
+                            "windows", "program files", "program files (x86)",
+                            ".git", "node_modules", "__pycache__",
+                        }
+                    ]
+                    for filename in files:
+                        total_files_found += 1
+                        full_path = os.path.join(root, filename)
+                        try:
+                            if os.path.islink(full_path):
+                                continue
+                            if os.path.getsize(full_path) > 50 * 1024 * 1024:
+                                skipped += 1
+                                continue
+
+                            print(f"🔍 [SCANNING PRESET] {full_path}")
+                            
+                            file_counter = len(scored_files) + skipped
+                            if file_counter % 15 == 0 and MAIN_WINDOW is not None:
+                                safe_path = full_path.replace("\\", "\\\\").replace("'", "\\'")
+                                try:
+                                    MAIN_WINDOW.evaluate_js(
+                                        f"if(window.updateScanningFile){{window.updateScanningFile('{safe_path}');}}"
+                                    )
+                                    time.sleep(0.001)
+                                except Exception:
+                                    pass
+
+                            score, justifications = self._score_file(full_path)
+                            if score > 0:
+                                scored_files.append((score, justifications, full_path))
+                        except OSError:
+                            skipped += 1
+                            continue
+            except PermissionError:
+                pass
+        
+        registry_hits = self._scan_registry_persistence()
+        scored_files.extend(registry_hits)
+
+        if not scored_files:
+            return json.dumps({
+                "risk_level": "LOW",
+                "summary": "Bank Lab Scan complete. No suspicious files or persistence mechanisms found.",
+                "timeline": [],
+                "recommendation": "No immediate action required.",
+                "total_files_scanned": total_files_found,
+                "total_folders_scanned": total_folders_found,
+            }, ensure_ascii=False)
+
+        scored_files.sort(key=lambda x: x[0], reverse=True)
+        top_suspects = scored_files[:10]
+
+        aggregate_lines: list[str] = []
+        aggregate_lines.append(f"=== BANK LAB TRIAGE REPORT — {datetime.now().isoformat()} ===")
+        aggregate_lines.append(f"Target directories: 8 High-Value Lab Locations + Live Registry")
+        aggregate_lines.append(f"Total files scanned: {len(scored_files) + skipped}")
+        aggregate_lines.append(f"Suspicious artifacts found: {len(scored_files)}")
+        aggregate_lines.append(f"Presenting top {len(top_suspects)} suspects:\n")
+
+        file_meta_list = []
+        for rank, (score, justifications, fpath) in enumerate(top_suspects, start=1):
+            if fpath.startswith("HKCU") or fpath.startswith("HKLM"):
+                ext = "[REGISTRY]"
+                size = 0
+                mtime_str = "Live Registry"
+                sha256_val = "N/A"
+                content = f"Virtual Registry Entry: {fpath}"
+            else:
+                ext   = os.path.splitext(fpath)[1].lower()
+                size  = 0
+                mtime_str = "unknown"
+                sha256_val = ""
+                try:
+                    stat_info = os.stat(fpath)
+                    size = stat_info.st_size
+                    mtime_str = datetime.fromtimestamp(stat_info.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    h = hashlib.sha256()
+                    with open(fpath, "rb") as fh:
+                        for chunk in iter(lambda: fh.read(65536), b""):
+                            h.update(chunk)
+                    sha256_val = h.hexdigest().lower()
+                except OSError:
+                    pass
+                content = self._extract_text(fpath)
+
+            justification_text = "  " + "\n  ".join(
+                f"[{j+1}] {reason}" for j, reason in enumerate(justifications)
+            ) if justifications else "  [No specific rule triggered]"
+
+            block = (
+                f"--- FILE #{rank} (Suspicion Score: {score}) ---\n"
+                f"Path      : {fpath}\n"
+                f"Extension : {ext}\n"
+                f"Size      : {size} bytes\n"
+                f"Modified  : {mtime_str}\n"
+                f"SHA-256   : {sha256_val}\n"
+                f"Scoring Justification:\n{justification_text}\n"
+                f"Content Preview:\n{content}\n"
+            )
+            aggregate_lines.append(block)
+
+            if fpath.startswith("HKCU") or fpath.startswith("HKLM"):
+                name = fpath.split(" -> ")[0].split("\\")[-1]
+                path = fpath.split(" -> ")[1] if " -> " in fpath else fpath
+                file_meta_list.append({
+                    "name": name,
+                    "path": fpath,
+                    "extension": "[REGISTRY]",
+                    "size": 0,
+                    "modified": "Live Registry",
+                    "score": score,
+                    "sha256": "N/A",
+                    "justifications": justifications,
+                    "rank": rank,
+                    "justification": justifications
+                })
+            else:
+                file_meta_list.append({
+                    "rank": rank,
+                    "score": score,
+                    "path": fpath,
+                    "extension": ext,
+                    "size": size,
+                    "modified": mtime_str,
+                    "justification": justifications,
+                    "sha256": sha256_val,
+                })
+
+        raw_data = "\n".join(aggregate_lines)
+        ai_result = self._analyze_with_local_ai(raw_data)
+
+        try:
+            result_obj = json.loads(ai_result)
+        except (json.JSONDecodeError, TypeError):
+            return json.dumps({
+                "error": "The AI response was not valid JSON. The model may still be warming up — please retry.",
+                "raw_response": ai_result,
+            }, ensure_ascii=False)
+
+        if "error" in result_obj:
+            print(f"[WARN] AI analysis returned an error: {result_obj['error']}")
+            return json.dumps(result_obj, ensure_ascii=False)
+
+        result_obj["scanned_files"]         = file_meta_list
+        result_obj["total_suspicious"]      = len(scored_files)
+        result_obj["total_files_scanned"]   = total_files_found
+        result_obj["total_folders_scanned"] = total_folders_found
+        scan_ts = datetime.now()
+        result_obj["scan_timestamp"] = scan_ts.isoformat()
+
+        report_path = self._save_report(result_obj, file_meta_list, scan_ts)
+        if report_path:
+            result_obj["report_file_path"] = report_path
+
+        return json.dumps(result_obj, ensure_ascii=False)
+
     def start_emergency_scan(self, folder_path: str) -> str:
         """
         Stage 1: Triage the target folder.
@@ -1033,17 +1256,31 @@ class CyberAPI:
             # ──────────────────────────────────────────────────────────────────
 
             # ── Backslash sanitization ────────────────────────────────────────
-            # The local LLM often writes Windows paths with raw single backslashes
-            # (e.g. "Installers\AnyDesk.exe"). In strict JSON, \A / \I / \P etc.
-            # are invalid escape sequences and crash json.loads().
-            # This regex doubles any backslash NOT already part of a valid JSON
-            # escape sequence: \", \\, \/, \b, \f, \n, \r, \t, \uXXXX.
-            raw_text = re.sub(r'\\(?!["\\\//bfnrtu])', r'\\\\', raw_text)
+            # Sanitize unescaped Windows paths backslashes inside the LLM JSON response
+            fixed_text = ""
+            in_string = False
+            i = 0
+            while i < len(raw_text):
+                char = raw_text[i]
+                if char == '"' and (i == 0 or raw_text[i-1] != '\\'):
+                    in_string = not in_string
+                if in_string and char == '\\':
+                    if i + 1 < len(raw_text):
+                        next_char = raw_text[i+1]
+                        if next_char in ['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u']:
+                            fixed_text += char  # Keep valid JSON escape tokens
+                        else:
+                            fixed_text += '\\\\'  # Auto-double stand-alone path backslashes
+                    else:
+                        fixed_text += '\\\\'
+                else:
+                    fixed_text += char
+                i += 1
             # ──────────────────────────────────────────────────────────────────
 
             # Validate and return
-            json.loads(raw_text)  # raises json.JSONDecodeError if still malformed
-            return raw_text
+            json.loads(fixed_text)  # raises json.JSONDecodeError if still malformed
+            return fixed_text
 
         except requests.exceptions.ConnectionError:
             return json.dumps({
@@ -1095,19 +1332,63 @@ class CyberAPI:
 
 
 # ---------------------------------------------------------------------------
+# Lightweight HTTP Server for POST Automation
+# ---------------------------------------------------------------------------
+GLOBAL_API = None
+
+class PresetAPIHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        if self.path == '/api/scan':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            payload = json.loads(post_data.decode('utf-8'))
+            
+            if payload.get("preset") == "bank-lab" and GLOBAL_API:
+                # Trigger the preset synchronously to hold the connection
+                # and return the final JSON payload directly back to React fetch()
+                result_json = GLOBAL_API.run_bank_lab_preset()
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(result_json.encode('utf-8'))
+                return
+                
+        self.send_response(404)
+        self.end_headers()
+        
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+        
+    def log_message(self, format, *args):
+        pass  # Suppress default HTTP logs
+
+def start_http_server():
+    server = HTTPServer(('127.0.0.1', 5000), PresetAPIHandler)
+    server.serve_forever()
+
+# ---------------------------------------------------------------------------
 # Application Entry Point
 # ---------------------------------------------------------------------------
 
 def main():
-    global ai_process, MAIN_WINDOW
+    global ai_process, MAIN_WINDOW, GLOBAL_API
 
     # Step 1: Launch the local AI server in the background
     print(f"[INFO] USB Base Directory: {BASE_DIR}")
     print(f"[INFO] Launching llama-server from: {LLAMA_SERVER_PATH}")
     ai_process = launch_ai_server()
 
-    # Step 2: Create the API bridge
+    # Step 2: Create the API bridge and start HTTP Server
     api = CyberAPI()
+    GLOBAL_API = api
+    threading.Thread(target=start_http_server, daemon=True).start()
+    print("[INFO] Local Automation API listening on port 5000")
 
     # Step 3: Determine path to the React build
     frontend_build_dir = os.path.join(BASE_DIR, "frontend", "build")

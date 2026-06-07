@@ -99,43 +99,61 @@ function Header({ aiStatus }) {
   );
 }
 
-function ScanControl({ folderPath, setFolderPath, onScan, loading }) {
+function ScanControl({ folderPath, setFolderPath, onScan, onPresetScan, loading }) {
   return (
-    <div className="glass-card rounded-2xl border border-slate-800 p-6 space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Icons.Scan />
-        <h2 className="text-sm font-bold tracking-widest text-slate-300 uppercase">Emergency Scan Target</h2>
-      </div>
-
-      <div className="flex gap-3">
-        <div className="relative flex-1">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-            <Icons.Folder />
-          </div>
-          <input
-            id="folder-path-input"
-            type="text"
-            value={folderPath}
-            onChange={(e) => setFolderPath(e.target.value)}
-            placeholder="C:\Users\Suspect\AppData  — or drag & drop a path here"
-            disabled={loading}
-            className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder-slate-600 font-mono focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all disabled:opacity-50"
-          />
-        </div>
+    <div className="glass-card rounded-2xl border border-slate-800 p-6 space-y-6">
+      
+      {/* MACRO ACTION BUTTON */}
+      <div>
         <button
-          id="start-scan-btn"
-          onClick={onScan}
-          disabled={loading || !folderPath.trim()}
-          className="relative px-6 py-3 rounded-xl font-bold text-sm tracking-widest uppercase text-white bg-gradient-to-r from-red-600 to-red-700 border border-red-500 hover:from-red-500 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-red-900/50 hover:shadow-red-700/60 hover:scale-105 active:scale-95 flex items-center gap-2"
+          onClick={onPresetScan}
+          disabled={loading}
+          className="w-full relative px-6 py-4 rounded-xl font-black text-sm tracking-widest uppercase text-white bg-gradient-to-r from-purple-600 to-indigo-700 border-2 border-purple-500 hover:from-purple-500 hover:to-indigo-600 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 overflow-hidden group"
         >
-          <Icons.Scan />
-          {loading ? 'SCANNING...' : 'START EMERGENCY SCAN'}
+          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+          <span className="relative z-10 text-xl">🎯</span>
+          <span className="relative z-10 drop-shadow-md">RUN LAB AUTOMATED INCIDENT PRESET (DOWNLOADS, DESKTOP, CHROME CACHE, REGISTRY, TASKS, EVENT LOGS, TEMPS)</span>
         </button>
       </div>
 
-      <p className="text-xs text-slate-600 font-mono">
-        💡 Tip: Paste the full path to a suspect user profile, temp folder, or downloads directory for best results.
-      </p>
+      <div className="relative flex items-center py-2">
+        <div className="flex-grow border-t border-slate-700"></div>
+        <span className="flex-shrink-0 mx-4 text-xs font-bold tracking-widest text-slate-500 uppercase">OR MANUAL TARGET</span>
+        <div className="flex-grow border-t border-slate-700"></div>
+      </div>
+
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <Icons.Scan />
+          <h2 className="text-sm font-bold tracking-widest text-slate-300 uppercase">Emergency Scan Target</h2>
+        </div>
+
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+              <Icons.Folder />
+            </div>
+            <input
+              id="folder-path-input"
+              type="text"
+              value={folderPath}
+              onChange={(e) => setFolderPath(e.target.value)}
+              placeholder="C:\Users\Suspect\AppData  — or drag & drop a path here"
+              disabled={loading}
+              className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder-slate-600 font-mono focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all disabled:opacity-50"
+            />
+          </div>
+          <button
+            id="start-scan-btn"
+            onClick={onScan}
+            disabled={loading || !folderPath.trim()}
+            className="relative px-6 py-3 rounded-xl font-bold text-sm tracking-widest uppercase text-white bg-gradient-to-r from-red-600 to-red-700 border border-red-500 hover:from-red-500 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-red-900/50 hover:shadow-red-700/60 hover:scale-105 active:scale-95 flex items-center gap-2"
+          >
+            <Icons.Scan />
+            {loading ? 'SCANNING...' : 'START EMERGENCY SCAN'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -561,6 +579,35 @@ export default function App() {
     }
   };
 
+  const handlePresetScan = async () => {
+    setLoading(true);
+    setError(null);
+    setScanResult(null);
+    setCurrentFile('');
+
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ preset: 'bank-lab' })
+      });
+      
+      const obj = await response.json();
+
+      if (obj.error) {
+        setError(obj.error);
+      } else {
+        setScanResult(obj);
+      }
+    } catch (err) {
+      setError(`Network error calling Preset API: ${err.message}. Is the port 5000 server running?`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleScan();
   };
@@ -579,6 +626,7 @@ export default function App() {
             folderPath={folderPath}
             setFolderPath={setFolderPath}
             onScan={handleScan}
+            onPresetScan={handlePresetScan}
             loading={loading}
           />
         </div>
