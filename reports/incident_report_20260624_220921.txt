@@ -1,0 +1,79 @@
+========================================================================
+       SOC EMERGENCY AI SCANNER — INCIDENT FORENSIC REPORT
+========================================================================
+  Scan Timestamp  : 2026-06-24 22:09:21
+  Risk Level      : HIGH
+  Suspicious Files: 23
+  Report File     : D:\College SOC Analyst\Projects\Final Project\reports\incident_report_20260624_220921.txt
+========================================================================
+
+[ סיכום המתקפה / ATTACK SUMMARY ]
+------------------------------------------------------------------------
+The investigation reveals a sophisticated malware infection targeting the user 'Guy'. The primary malware, 'gcapi.dll', was identified in the Temp directory, indicating a recent infection. The malware is unsigned and has a high suspicion score, matching a known malware signature. Additionally, several suspicious files were found in the Downloads directory, including 'svchost.exe', which masquerades as a critical Windows system binary. These files are likely packed or encrypted, suggesting advanced obfuscation techniques. The presence of these files in the Temp and Downloads directories suggests that the malware was downloaded and executed from there. The malware may have been used to establish a foothold and potentially exfiltrate data or maintain persistence. The risk level is set to HIGH due to the presence of a definitive malware match and the potential for lateral movement and data exfiltration.
+
+[ ציר זמן / ATTACK TIMELINE ]
+------------------------------------------------------------------------
+  [01] 22:05  [FILE]  gcapi.dll was downloaded and executed from the Temp directory.
+  [02] 22:34  [FILE]  gcapi.dll was identified in the Temp directory.
+  [03] 14:23  [FILE]  nsDui.dll was downloaded and executed from the Temp directory.
+  [04] 20:58  [FILE]  recoverit.exe was downloaded and executed from the Downloads directory.
+
+[ המלצות לצוות ה-SOC / RECOMMENDATIONS ]
+------------------------------------------------------------------------
+Immediate containment of the infected machine is required. Remove all suspicious files and ensure the machine is disconnected from the network. Perform a full system scan using reputable antivirus software. Monitor the system for any signs of lateral movement or data exfiltration. Consider conducting a full forensic analysis to identify any additional malicious artifacts or lateral movement techniques used by the attackers.
+
+[ קבצים חשודים / SUSPECT FILE LIST ]
+------------------------------------------------------------------------
+========================================================================
+🔴 [ CATEGORY 01 ]  CRITICAL THREATS (CONFIRMED MALWARE & SPOOFING)
+========================================================================
+  #01  Score: 150  [████████████████████]  C:\Users\Guy\AppData\Local\Temp\gcapi.dll
+       Ext: .dll  |  Size: 385.0 KB  |  Modified: 2026-06-12 22:34:07
+       👉 Flagged Reason: Definitive malware match found in offline database (+100 points)
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #02  Score: 100  [████████████████████]  C:\Users\Guy\Downloads\Installers\svchost.exe
+       Ext: .exe  |  Size: 40350.4 KB  |  Modified: 2025-05-17 14:53:27
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+       👉 Flagged Reason: Filename masquerading detected — critical Windows system binary name found running from an unauthorized directory (+50 points)
+
+
+========================================================================
+🟡 [ CATEGORY 02 ]  WARNINGS (UNSIGNED BINARIES FOR ANALYST TRIAGE)
+========================================================================
+  #03  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\Downloads\Installers\qbittorrent_5.0.4_x64_setup.exe
+       Ext: .exe  |  Size: 38389.2 KB  |  Modified: 2025-02-22 18:56:13
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #04  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\Downloads\Installers\win32diskimager-1.0.0-install.exe
+       Ext: .exe  |  Size: 12272.6 KB  |  Modified: 2025-06-04 16:42:42
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #05  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\Downloads\Wondershare Data Recovery 6.0.0.31 + Crack [Tech-Tools.ME]\Wondershare Data Recovery 6.0.0.31 + Crack [Tech-Tools.ME]\Wondershare Data Recovery 6.0.0.31 + Crack [Tech-Tools.ME]\Crack\Register.dll
+       Ext: .dll  |  Size: 1614.0 KB  |  Modified: 2016-12-01 06:52:32
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #06  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\Downloads\Wondershare Recoverit v10.0.0.48 (x64) + Fix {CracksHash}\Crack Fix\Crack Fix\recoverit.exe
+       Ext: .exe  |  Size: 26009.5 KB  |  Modified: 2025-06-05 20:58:51
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #07  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\Desktop\USB\bin\llama-server.exe
+       Ext: .exe  |  Size: 9.5 KB  |  Modified: 2026-06-05 13:02:12
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #08  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\AppData\Local\Temp\nsi4489.tmp\nsDui.dll
+       Ext: .dll  |  Size: 3083.5 KB  |  Modified: 2026-06-08 14:23:55
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #09  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\AppData\Local\Temp\nsy4583.tmp\nsDui.dll
+       Ext: .dll  |  Size: 3083.5 KB  |  Modified: 2026-06-08 14:23:55
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #10  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\AppData\Local\Temp\_MEI321842\clr_loader\ffi\dlls\amd64\ClrLoader.dll
+       Ext: .dll  |  Size: 10.0 KB  |  Modified: 2026-06-24 22:05:55
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+========================================================================
+  Generated by SOC Emergency AI Scanner v1.0 — Offline USB Mode
+  All AI analysis performed locally. No data left the device.
+========================================================================

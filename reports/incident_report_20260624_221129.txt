@@ -1,0 +1,79 @@
+========================================================================
+       SOC EMERGENCY AI SCANNER — INCIDENT FORENSIC REPORT
+========================================================================
+  Scan Timestamp  : 2026-06-24 22:11:29
+  Risk Level      : HIGH
+  Suspicious Files: 23
+  Report File     : D:\College SOC Analyst\Projects\Final Project\reports\incident_report_20260624_221129.txt
+========================================================================
+
+[ סיכום המתקפה / ATTACK SUMMARY ]
+------------------------------------------------------------------------
+The investigation revealed the presence of multiple suspicious files with high entropy and unsigned binaries, indicating potential malware. The primary suspect, gcapi.dll, is a definitive match for malware and is located in the Temp directory, suggesting persistence. The svchost.exe file, masquerading as a critical Windows system binary, is also highly suspicious. These artifacts point to a sophisticated attack targeting the system for persistence and lateral movement.
+
+[ ציר זמן / ATTACK TIMELINE ]
+------------------------------------------------------------------------
+  [01] 2026-06-12 22:34  [FILE]  gcapi.dll was created and placed in the Temp directory, likely for persistence.
+  [02] 2025-05-17 14:53  [FILE]  svchost.exe was downloaded and placed in the Downloads directory, posing as a legitimate Windows system binary.
+  [03] 2026-06-24 22:09  [FILE]  The system was triaged, revealing the presence of multiple suspicious files with high entropy and unsigned binaries.
+  [04] TBD  [NETWORK]  Further investigation is required to determine the C2 communication and lateral movement techniques used by the attackers.
+
+[ המלצות לצוות ה-SOC / RECOMMENDATIONS ]
+------------------------------------------------------------------------
+Immediate containment and investigation of the svchost.exe file are required. The system should be quarantined, and the Temp directory should be thoroughly inspected for additional malicious artifacts. The SOC team should also monitor for any C2 communications and lateral movement activities.
+
+[ קבצים חשודים / SUSPECT FILE LIST ]
+------------------------------------------------------------------------
+========================================================================
+🔴 [ CATEGORY 01 ]  CRITICAL THREATS (CONFIRMED MALWARE & SPOOFING)
+========================================================================
+  #01  Score: 150  [████████████████████]  C:\Users\Guy\AppData\Local\Temp\gcapi.dll
+       Ext: .dll  |  Size: 385.0 KB  |  Modified: 2026-06-12 22:34:07
+       👉 Flagged Reason: Definitive malware match found in offline database (+100 points)
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #02  Score: 100  [████████████████████]  C:\Users\Guy\Downloads\Installers\svchost.exe
+       Ext: .exe  |  Size: 40350.4 KB  |  Modified: 2025-05-17 14:53:27
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+       👉 Flagged Reason: Filename masquerading detected — critical Windows system binary name found running from an unauthorized directory (+50 points)
+
+
+========================================================================
+🟡 [ CATEGORY 02 ]  WARNINGS (UNSIGNED BINARIES FOR ANALYST TRIAGE)
+========================================================================
+  #03  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\Downloads\Installers\qbittorrent_5.0.4_x64_setup.exe
+       Ext: .exe  |  Size: 38389.2 KB  |  Modified: 2025-02-22 18:56:13
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #04  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\Downloads\Installers\win32diskimager-1.0.0-install.exe
+       Ext: .exe  |  Size: 12272.6 KB  |  Modified: 2025-06-04 16:42:42
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #05  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\Downloads\Wondershare Data Recovery 6.0.0.31 + Crack [Tech-Tools.ME]\Wondershare Data Recovery 6.0.0.31 + Crack [Tech-Tools.ME]\Wondershare Data Recovery 6.0.0.31 + Crack [Tech-Tools.ME]\Crack\Register.dll
+       Ext: .dll  |  Size: 1614.0 KB  |  Modified: 2016-12-01 06:52:32
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #06  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\Downloads\Wondershare Recoverit v10.0.0.48 (x64) + Fix {CracksHash}\Crack Fix\Crack Fix\recoverit.exe
+       Ext: .exe  |  Size: 26009.5 KB  |  Modified: 2025-06-05 20:58:51
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #07  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\Desktop\USB\bin\llama-server.exe
+       Ext: .exe  |  Size: 9.5 KB  |  Modified: 2026-06-05 13:02:12
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #08  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\AppData\Local\Temp\nsi4489.tmp\nsDui.dll
+       Ext: .dll  |  Size: 3083.5 KB  |  Modified: 2026-06-08 14:23:55
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #09  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\AppData\Local\Temp\nsy4583.tmp\nsDui.dll
+       Ext: .dll  |  Size: 3083.5 KB  |  Modified: 2026-06-08 14:23:55
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+  #10  Score:  50  [██████████░░░░░░░░░░]  C:\Users\Guy\AppData\Local\Temp\_MEI227082\clr_loader\ffi\dlls\amd64\ClrLoader.dll
+       Ext: .dll  |  Size: 10.0 KB  |  Modified: 2026-06-24 22:09:36
+       👉 Flagged Reason: Unsigned binary — lacks a valid Authenticode digital signature (+50 points)
+
+========================================================================
+  Generated by SOC Emergency AI Scanner v1.0 — Offline USB Mode
+  All AI analysis performed locally. No data left the device.
+========================================================================
