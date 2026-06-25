@@ -84,7 +84,7 @@ MODEL_DIR = os.path.join(EXE_DIR,  "models")
 LLAMA_SERVER_PATH = os.path.join(BIN_DIR, "llama-server.exe")
 MODEL_PATH        = os.path.join(MODEL_DIR, "Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf")
 
-AI_SERVER_URL = "http://127.0.0.1:8080/completion"
+AI_SERVER_URL = "http://127.0.0.1:8080/v1/chat/completions"
 AI_SERVER_HEALTH_URL = "http://127.0.0.1:8080/health"
 AI_STARTUP_TIMEOUT_SECONDS = 60  # max time to wait for the server to come online
 
@@ -851,13 +851,17 @@ class CyberAPI:
                             ".git", "node_modules", "__pycache__",
                             "cache", "caches", "logs", "log",
                             "crashreports", "crashpad",
+                            "ebwebview",   # PyWebView's WebView2 temp data dir
+                            "shadercache", "pkimetadata", "subresource filter",
                         }
                         and not d.startswith("_MEI")   # PyInstaller temp bundles
                     ]
-                    # ── Safety-net path filter (catches any _MEI dirs that slipped through) ──
-                    # The dirs[:] filter above prevents descent into _MEI* folders,
-                    # but as a belt-and-suspenders guard we also skip at the file level.
-                    if any(part.startswith("_MEI") for part in root.replace("\\", "/").split("/")):
+                    # ── Safety-net path filter ────────────────────────────────────────────
+                    # Catches _MEI* (PyInstaller) and EBWebView (PyWebView) temp dirs that
+                    # slipped through the dirs[:] pruning above.
+                    _root_parts = root.replace("\\", "/").split("/")
+                    if any(part.startswith("_MEI") or part.lower() == "ebwebview"
+                           for part in _root_parts):
                         skipped += len(files)
                         continue
 
@@ -1343,12 +1347,20 @@ class CyberAPI:
 
     def _analyze_with_local_ai(self, raw_data: str) -> str:
         """
-        POST the aggregated file data to the locally running llama-server.
-        Returns the AI's raw JSON string response.
+        POST the aggregated file data to the locally running llama-server
+        via the OpenAI-compatible /v1/chat/completions endpoint.
+
+        Using /v1/chat/completions instead of /completion ensures the
+        Qwen2.5 <|im_start|> chat template is applied automatically by
+        llama-server, so the model receives correctly formatted instructions
+        and produces structured JSON output instead of echoing the input.
         """
         payload = {
-            "prompt": f"{SYSTEM_PROMPT}\n\nData:\n{raw_data}",
-            "n_predict": 512,   # Trimmed for slow CPU machines (~8 tok/s VMs)
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user",   "content": f"Analyze the following data and return ONLY the JSON object:\n\n{raw_data}"},
+            ],
+            "max_tokens": 512,   # Trimmed for slow CPU machines (~8 tok/s VMs)
             "temperature": 0.2,
             "stop": ["```", "\n\n\n"],
         }
@@ -1362,8 +1374,13 @@ class CyberAPI:
             response.raise_for_status()
             data = response.json()
 
-            # llama-server returns the text under the "content" key
-            raw_text = data.get("content", "").strip()
+            # /v1/chat/completions returns text under choices[0].message.content
+            raw_text = (
+                data.get("choices", [{}])[0]
+                    .get("message", {})
+                    .get("content", "")
+                    .strip()
+            )
 
             # ── DEBUG: print raw AI response to terminal for auditing ──────────
             print("\n=================== RAW AI RESPONSE ===================")
@@ -1371,51 +1388,62 @@ class CyberAPI:
             print("=======================================================\n")
             # ──────────────────────────────────────────────────────────────────
 
-            # ── STRICT BRACE TRACKING CUTOFF FILTER ───────────────────────────
-            # The local LLM occasionally stutters and repeats the JSON object.
-            # We find the absolute FIRST matching root closing brace and cleanly
-            # truncate the string right there, throwing away the rest.
+            # ── Extract JSON block (brace-depth tracker) ──────────────────────
             start_idx = raw_text.find('{')
             if start_idx != -1:
                 depth = 0
+                end_idx = start_idx
                 for idx in range(start_idx, len(raw_text)):
                     if raw_text[idx] == '{':
                         depth += 1
                     elif raw_text[idx] == '}':
                         depth -= 1
                         if depth == 0:
-                            # Reached the exact matching root closing brace.
-                            # Hard slice the string here and kill the stutter loop.
-                            raw_text = raw_text[start_idx:idx+1]
+                            end_idx = idx
                             break
+                json_candidate = raw_text[start_idx:end_idx + 1]
+            else:
+                json_candidate = raw_text
             # ──────────────────────────────────────────────────────────────────
 
-            # ── Backslash sanitization ────────────────────────────────────────
-            # Sanitize unescaped Windows paths backslashes inside the LLM JSON response
+            # ── Parse attempt 1: direct (chat API already returns valid JSON) ─
+            try:
+                json.loads(json_candidate)
+                return json_candidate
+            except json.JSONDecodeError:
+                pass
+            # ──────────────────────────────────────────────────────────────────
+
+            # ── Parse attempt 2: backslash sanitizer (fallback for raw paths) ─
             fixed_text = ""
             in_string = False
             i = 0
-            while i < len(raw_text):
-                char = raw_text[i]
-                if char == '"' and (i == 0 or raw_text[i-1] != '\\'):
+            while i < len(json_candidate):
+                char = json_candidate[i]
+                if char == '"' and (i == 0 or json_candidate[i-1] != '\\'):
                     in_string = not in_string
                 if in_string and char == '\\':
-                    if i + 1 < len(raw_text):
-                        next_char = raw_text[i+1]
+                    if i + 1 < len(json_candidate):
+                        next_char = json_candidate[i+1]
                         if next_char in ['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u']:
-                            fixed_text += char  # Keep valid JSON escape tokens
+                            fixed_text += char
                         else:
-                            fixed_text += '\\\\'  # Auto-double stand-alone path backslashes
+                            fixed_text += '\\\\'
                     else:
                         fixed_text += '\\\\'
                 else:
                     fixed_text += char
                 i += 1
+
+            try:
+                json.loads(fixed_text)
+                return fixed_text
+            except json.JSONDecodeError as parse_err:
+                print(f"[WARN] JSON parse failed after sanitizer: {parse_err}")
+                print(f"[WARN] Candidate text was: {json_candidate[:300]}")
             # ──────────────────────────────────────────────────────────────────
 
-            # Validate and return
-            json.loads(fixed_text)  # raises json.JSONDecodeError if still malformed
-            return fixed_text
+            raise json.JSONDecodeError("Could not parse AI response", json_candidate, 0)
 
         except requests.exceptions.ConnectionError:
             return json.dumps({
@@ -1545,7 +1573,7 @@ def main():
     print(f"[DIAG] Frontend build exists: {os.path.isfile(index_html)}")
     resolved_url = index_html if os.path.isfile(index_html) else "http://localhost:3000"
     print(f"[DIAG] PyWebView will load  : {resolved_url}")
-    print(f"[DIAG] PyWebView version    : {webview.__version__}")
+    print(f"[DIAG] PyWebView version    : {getattr(webview, '__version__', 'unknown')}")
 
     try:
         window = webview.create_window(

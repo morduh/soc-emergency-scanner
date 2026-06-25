@@ -73,29 +73,29 @@
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\WebBrowserInterop.x86.dll',
    'BINARY'),
-  ('webview\\lib\\Microsoft.Web.WebView2.Core.dll',
+  ('webview\\lib\\WebBrowserInterop.x64.dll',
    'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\Microsoft.Web.WebView2.Core.dll',
-   'BINARY'),
-  ('webview\\lib\\runtimes\\win-arm64\\native\\WebView2Loader.dll',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\runtimes\\win-arm64\\native\\WebView2Loader.dll',
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\WebBrowserInterop.x64.dll',
    'BINARY'),
   ('webview\\lib\\runtimes\\win-x64\\native\\WebView2Loader.dll',
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\runtimes\\win-x64\\native\\WebView2Loader.dll',
    'BINARY'),
-  ('webview\\lib\\WebBrowserInterop.x64.dll',
+  ('webview\\lib\\Microsoft.Web.WebView2.WinForms.dll',
    'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\WebBrowserInterop.x64.dll',
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\Microsoft.Web.WebView2.WinForms.dll',
+   'BINARY'),
+  ('webview\\lib\\Microsoft.Web.WebView2.Core.dll',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\Microsoft.Web.WebView2.Core.dll',
    'BINARY'),
   ('webview\\lib\\runtimes\\win-x86\\native\\WebView2Loader.dll',
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\runtimes\\win-x86\\native\\WebView2Loader.dll',
    'BINARY'),
-  ('webview\\lib\\Microsoft.Web.WebView2.WinForms.dll',
+  ('webview\\lib\\runtimes\\win-arm64\\native\\WebView2Loader.dll',
    'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\Microsoft.Web.WebView2.WinForms.dll',
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\runtimes\\win-arm64\\native\\WebView2Loader.dll',
    'BINARY'),
   ('python38.dll',
    'D:\\College SOC Analyst\\Projects\\Final '
@@ -105,13 +105,13 @@
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\pythonnet\\runtime\\Python.Runtime.dll',
    'BINARY'),
-  ('clr_loader\\ffi\\dlls\\x86\\ClrLoader.dll',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\clr_loader\\ffi\\dlls\\x86\\ClrLoader.dll',
-   'BINARY'),
   ('clr_loader\\ffi\\dlls\\amd64\\ClrLoader.dll',
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\clr_loader\\ffi\\dlls\\amd64\\ClrLoader.dll',
+   'BINARY'),
+  ('clr_loader\\ffi\\dlls\\x86\\ClrLoader.dll',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\clr_loader\\ffi\\dlls\\x86\\ClrLoader.dll',
    'BINARY'),
   ('pywin32_system32\\pywintypes38.dll',
    'D:\\College SOC Analyst\\Projects\\Final '
@@ -265,26 +265,6 @@
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\frontend\\build\\index.html',
    'DATA'),
-  ('webview\\js\\state.js',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\js\\state.js',
-   'DATA'),
-  ('webview\\js\\lib\\dom_json.js',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\js\\lib\\dom_json.js',
-   'DATA'),
-  ('webview\\js\\lib\\polyfill.js',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\js\\lib\\polyfill.js',
-   'DATA'),
-  ('webview\\js\\customize.js',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\js\\customize.js',
-   'DATA'),
-  ('webview\\lib\\pywebview-android.jar',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\pywebview-android.jar',
-   'DATA'),
   ('webview\\js\\api.js',
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\js\\api.js',
@@ -293,49 +273,41 @@
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\js\\finish.js',
    'DATA'),
-  ('certifi\\py.typed',
+  ('webview\\js\\lib\\dom_json.js',
    'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\certifi\\py.typed',
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\js\\lib\\dom_json.js',
+   'DATA'),
+  ('webview\\lib\\pywebview-android.jar',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\lib\\pywebview-android.jar',
+   'DATA'),
+  ('webview\\js\\customize.js',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\js\\customize.js',
+   'DATA'),
+  ('webview\\js\\lib\\polyfill.js',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\js\\lib\\polyfill.js',
+   'DATA'),
+  ('webview\\js\\state.js',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\js\\state.js',
    'DATA'),
   ('certifi\\cacert.pem',
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\certifi\\cacert.pem',
    'DATA'),
-  ('setuptools-57.0.0.dist-info\\entry_points.txt',
+  ('certifi\\py.typed',
    'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\entry_points.txt',
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\certifi\\py.typed',
    'DATA'),
-  ('setuptools-57.0.0.dist-info\\RECORD',
+  ('setuptools-57.0.0.dist-info\\METADATA',
    'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\RECORD',
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\METADATA',
    'DATA'),
-  ('setuptools-57.0.0.dist-info\\top_level.txt',
+  ('setuptools-57.0.0.dist-info\\INSTALLER',
    'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\top_level.txt',
-   'DATA'),
-  ('setuptools-57.0.0.dist-info\\LICENSE',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\LICENSE',
-   'DATA'),
-  ('setuptools-57.0.0.dist-info\\WHEEL',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\WHEEL',
-   'DATA'),
-  ('wheel-0.36.2.dist-info\\INSTALLER',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\INSTALLER',
-   'DATA'),
-  ('wheel-0.36.2.dist-info\\WHEEL',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\WHEEL',
-   'DATA'),
-  ('wheel-0.36.2.dist-info\\entry_points.txt',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\entry_points.txt',
-   'DATA'),
-  ('wheel-0.36.2.dist-info\\RECORD',
-   'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\RECORD',
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\INSTALLER',
    'DATA'),
   ('wheel-0.36.2.dist-info\\LICENSE.txt',
    'D:\\College SOC Analyst\\Projects\\Final '
@@ -345,6 +317,14 @@
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\REQUESTED',
    'DATA'),
+  ('setuptools-57.0.0.dist-info\\LICENSE',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\LICENSE',
+   'DATA'),
+  ('setuptools-57.0.0.dist-info\\REQUESTED',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\REQUESTED',
+   'DATA'),
   ('wheel-0.36.2.dist-info\\METADATA',
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\METADATA',
@@ -353,21 +333,41 @@
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\dependency_links.txt',
    'DATA'),
-  ('setuptools-57.0.0.dist-info\\INSTALLER',
+  ('setuptools-57.0.0.dist-info\\top_level.txt',
    'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\INSTALLER',
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\top_level.txt',
    'DATA'),
-  ('setuptools-57.0.0.dist-info\\REQUESTED',
+  ('setuptools-57.0.0.dist-info\\RECORD',
    'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\REQUESTED',
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\RECORD',
+   'DATA'),
+  ('wheel-0.36.2.dist-info\\entry_points.txt',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\entry_points.txt',
+   'DATA'),
+  ('setuptools-57.0.0.dist-info\\WHEEL',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\WHEEL',
+   'DATA'),
+  ('wheel-0.36.2.dist-info\\INSTALLER',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\INSTALLER',
+   'DATA'),
+  ('setuptools-57.0.0.dist-info\\entry_points.txt',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\entry_points.txt',
    'DATA'),
   ('wheel-0.36.2.dist-info\\top_level.txt',
    'D:\\College SOC Analyst\\Projects\\Final '
    'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\top_level.txt',
    'DATA'),
-  ('setuptools-57.0.0.dist-info\\METADATA',
+  ('wheel-0.36.2.dist-info\\RECORD',
    'D:\\College SOC Analyst\\Projects\\Final '
-   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\setuptools-57.0.0.dist-info\\METADATA',
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\RECORD',
+   'DATA'),
+  ('wheel-0.36.2.dist-info\\WHEEL',
+   'D:\\College SOC Analyst\\Projects\\Final '
+   'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\wheel-0.36.2.dist-info\\WHEEL',
    'DATA'),
   ('base_library.zip',
    'D:\\College SOC Analyst\\Projects\\Final '

@@ -1,10 +1,10 @@
-63 DEPRECATION: Running PyInstaller as admin is not necessary nor sensible. Run PyInstaller from a non-administrator terminal. PyInstaller 7.0 will block this.
-240 INFO: PyInstaller: 6.21.0, contrib hooks: 2026.6
-240 INFO: Python: 3.8.10
-249 INFO: Platform: Windows-10-10.0.26200-SP0
-249 INFO: Python environment: D:\College SOC Analyst\Projects\Final Project\WinPython\Python3.8\WPy64-38100\python-3.8.10.amd64
-249 INFO: wrote D:\College SOC Analyst\Projects\Final Project\SOC-Scanner.spec
-256 INFO: Module search paths (PYTHONPATH):
+21 DEPRECATION: Running PyInstaller as admin is not necessary nor sensible. Run PyInstaller from a non-administrator terminal. PyInstaller 7.0 will block this.
+63 INFO: PyInstaller: 6.21.0, contrib hooks: 2026.6
+64 INFO: Python: 3.8.10
+73 INFO: Platform: Windows-10-10.0.26200-SP0
+73 INFO: Python environment: D:\College SOC Analyst\Projects\Final Project\WinPython\Python3.8\WPy64-38100\python-3.8.10.amd64
+73 INFO: wrote D:\College SOC Analyst\Projects\Final Project\SOC-Scanner.spec
+74 INFO: Module search paths (PYTHONPATH):
 ['D:\\College SOC Analyst\\Projects\\Final Project',
  'D:\\College SOC Analyst\\Projects\\Final '
  'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\python38.zip',
@@ -23,87 +23,84 @@
  'D:\\College SOC Analyst\\Projects\\Final '
  'Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\Pythonwin',
  'D:\\College SOC Analyst\\Projects\\Final Project']
-621 INFO: Appending 'datas' from .spec
-621 INFO: checking Analysis
-621 INFO: Building Analysis because Analysis-00.toc is non existent
-621 INFO: Looking for Python shared library...
-621 INFO: Using Python shared library: D:\College SOC Analyst\Projects\Final Project\WinPython\Python3.8\WPy64-38100\python-3.8.10.amd64\python38.dll
-621 INFO: Running Analysis Analysis-00.toc
-621 INFO: Target bytecode optimization level: 0
-621 INFO: Initializing module dependency graph...
-622 INFO: Initializing module graph hook caches...
-650 INFO: Analyzing modules for base_library.zip ...
-1286 INFO: Processing standard module hook 'hook-encodings.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-1545 INFO: Processing standard module hook 'hook-math.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-2297 INFO: Processing standard module hook 'hook-pickle.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-2862 INFO: Processing standard module hook 'hook-heapq.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-3922 INFO: Caching module dependency graph...
-3942 INFO: Analyzing D:\College SOC Analyst\Projects\Final Project\app.py
-4023 INFO: Processing standard module hook 'hook-urllib3.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-4060 INFO: Processing pre-safe-import-module hook 'hook-urllib3.packages.six.moves.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-4692 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-4798 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-4800 INFO: SetuptoolsInfo: initializing cached setuptools info...
-5426 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-5605 INFO: Processing standard module hook 'hook-xml.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-5883 INFO: Processing standard module hook 'hook-_ctypes.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-6586 INFO: Processing standard module hook 'hook-certifi.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-6847 INFO: Processing standard module hook 'hook-webview.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\__pyinstaller'
-6891 INFO: Processing standard module hook 'hook-platform.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-7044 INFO: Processing standard module hook 'hook-webbrowser.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-7158 INFO: Processing standard module hook 'hook-jinja2.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-7621 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-7680 INFO: Processing standard module hook 'hook-clr.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-7687 INFO: Processing standard module hook 'hook-clr_loader.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-7743 INFO: Processing standard module hook 'hook-pycparser.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-8004 INFO: Processing standard module hook 'hook-setuptools.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-8021 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-8021 INFO: Processing pre-find-module-path hook 'hook-distutils.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
-8028 INFO: Processing standard module hook 'hook-distutils.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-8092 INFO: Processing standard module hook 'hook-distutils.util.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-8165 INFO: Processing standard module hook 'hook-_osx_support.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-8355 INFO: Processing standard module hook 'hook-pkg_resources.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-8902 INFO: Processing standard module hook 'hook-sysconfig.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-9480 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
-9513 INFO: Processing module hooks (post-graph stage)...
-9531 INFO: Processing pre-safe-import-module hook 'hook-win32com.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\pre_safe_import_module'
-9592 INFO: Processing standard module hook 'hook-win32com.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-9598 INFO: Processing standard module hook 'hook-pythoncom.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-9653 INFO: Processing standard module hook 'hook-pywintypes.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
-9966 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
-11058 INFO: Performing binary vs. data reclassification (25 entries)
-11490 INFO: Looking for ctypes DLLs
-11510 INFO: Analyzing run-time hooks ...
-11512 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-11520 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-11528 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-11535 INFO: Including run-time hook 'pyi_rth_setuptools.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-11542 INFO: Including run-time hook 'pyi_rth_pkgres.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\rthooks'
-11551 INFO: Including run-time hook 'pyi_rth_pywintypes.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
-11557 INFO: Including run-time hook 'pyi_rth_pythoncom.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
-11563 INFO: Creating base_library.zip...
-11577 INFO: Looking for dynamic libraries
-12164 INFO: Extra DLL search directories (AddDllDirectory): []
-12164 INFO: Extra DLL search directories (PATH): []
-12536 INFO: Warnings written to D:\College SOC Analyst\Projects\Final Project\build\SOC-Scanner\warn-SOC-Scanner.txt
-12575 INFO: Graph cross-reference written to D:\College SOC Analyst\Projects\Final Project\build\SOC-Scanner\xref-SOC-Scanner.html
-12620 INFO: checking PYZ
-12620 INFO: Building PYZ because PYZ-00.toc is non existent
-12620 INFO: Building PYZ (ZlibArchive) D:\College SOC Analyst\Projects\Final Project\build\SOC-Scanner\PYZ-00.pyz
-12894 INFO: Building PYZ (ZlibArchive) D:\College SOC Analyst\Projects\Final Project\build\SOC-Scanner\PYZ-00.pyz completed successfully.
-12906 INFO: checking PKG
-12906 INFO: Building PKG because PKG-00.toc is non existent
-12906 INFO: Building PKG (CArchive) SOC-Scanner.pkg
-14836 INFO: Building PKG (CArchive) SOC-Scanner.pkg completed successfully.
-14837 INFO: Bootloader D:\College SOC Analyst\Projects\Final Project\WinPython\Python3.8\WPy64-38100\python-3.8.10.amd64\lib\site-packages\PyInstaller\bootloader\Windows-64bit-intel\run.exe
-14837 INFO: checking EXE
-14837 INFO: Building EXE because EXE-00.toc is non existent
-14837 INFO: Building EXE from EXE-00.toc
-14837 INFO: Copying bootloader EXE to D:\College SOC Analyst\Projects\Final Project\dist\SOC-Scanner.exe
-14913 INFO: Copying icon to EXE
-14949 INFO: Copying 0 resources to EXE
-14949 INFO: Embedding manifest in EXE
-14994 INFO: Appending PKG archive to EXE
-15196 INFO: Fixing EXE headers
-15561 INFO: Building EXE from EXE-00.toc completed successfully.
-15563 INFO: Build complete! The results are available in: D:\College SOC Analyst\Projects\Final Project\dist
+330 INFO: Appending 'datas' from .spec
+331 INFO: checking Analysis
+335 INFO: Building because D:\College SOC Analyst\Projects\Final Project\app.py changed
+335 INFO: Looking for Python shared library...
+335 INFO: Using Python shared library: D:\College SOC Analyst\Projects\Final Project\WinPython\Python3.8\WPy64-38100\python-3.8.10.amd64\python38.dll
+335 INFO: Running Analysis Analysis-00.toc
+335 INFO: Target bytecode optimization level: 0
+335 INFO: Initializing module dependency graph...
+336 INFO: Initializing module graph hook caches...
+344 INFO: Analyzing modules for base_library.zip ...
+668 INFO: Processing standard module hook 'hook-heapq.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+757 INFO: Processing standard module hook 'hook-encodings.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+931 INFO: Processing standard module hook 'hook-math.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+1216 INFO: Processing standard module hook 'hook-pickle.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+1601 INFO: Caching module dependency graph...
+1622 INFO: Analyzing D:\College SOC Analyst\Projects\Final Project\app.py
+1651 INFO: Processing standard module hook 'hook-urllib3.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+1663 INFO: Processing pre-safe-import-module hook 'hook-urllib3.packages.six.moves.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+1943 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+1984 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+1985 INFO: SetuptoolsInfo: initializing cached setuptools info...
+2294 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+2373 INFO: Processing standard module hook 'hook-xml.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+2468 INFO: Processing standard module hook 'hook-_ctypes.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+2691 INFO: Processing standard module hook 'hook-certifi.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2765 INFO: Processing standard module hook 'hook-webview.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\webview\\__pyinstaller'
+2789 INFO: Processing standard module hook 'hook-platform.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+2834 INFO: Processing standard module hook 'hook-webbrowser.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+2896 INFO: Processing standard module hook 'hook-jinja2.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+3172 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+3222 INFO: Processing standard module hook 'hook-clr.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+3227 INFO: Processing standard module hook 'hook-clr_loader.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+3283 INFO: Processing standard module hook 'hook-pycparser.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+3549 INFO: Processing standard module hook 'hook-setuptools.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+3553 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+3553 INFO: Processing pre-find-module-path hook 'hook-distutils.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
+3553 INFO: Processing standard module hook 'hook-distutils.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+3579 INFO: Processing standard module hook 'hook-distutils.util.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+3614 INFO: Processing standard module hook 'hook-_osx_support.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+3697 INFO: Processing standard module hook 'hook-pkg_resources.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+4130 INFO: Processing standard module hook 'hook-sysconfig.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+4463 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks'
+4501 INFO: Processing module hooks (post-graph stage)...
+4512 INFO: Processing pre-safe-import-module hook 'hook-win32com.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\pre_safe_import_module'
+4553 INFO: Processing standard module hook 'hook-win32com.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+4554 INFO: Processing standard module hook 'hook-pythoncom.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+4594 INFO: Processing standard module hook 'hook-pywintypes.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+4773 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+5411 INFO: Performing binary vs. data reclassification (25 entries)
+5420 INFO: Looking for ctypes DLLs
+5435 INFO: Analyzing run-time hooks ...
+5436 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+5438 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+5440 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+5441 INFO: Including run-time hook 'pyi_rth_setuptools.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+5442 INFO: Including run-time hook 'pyi_rth_pkgres.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+5444 INFO: Including run-time hook 'pyi_rth_pywintypes.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+5445 INFO: Including run-time hook 'pyi_rth_pythoncom.py' from 'D:\\College SOC Analyst\\Projects\\Final Project\\WinPython\\Python3.8\\WPy64-38100\\python-3.8.10.amd64\\lib\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+5451 INFO: Creating base_library.zip...
+5470 INFO: Looking for dynamic libraries
+5850 INFO: Extra DLL search directories (AddDllDirectory): []
+5851 INFO: Extra DLL search directories (PATH): []
+6105 INFO: Warnings written to D:\College SOC Analyst\Projects\Final Project\build\SOC-Scanner\warn-SOC-Scanner.txt
+6159 INFO: Graph cross-reference written to D:\College SOC Analyst\Projects\Final Project\build\SOC-Scanner\xref-SOC-Scanner.html
+6184 INFO: checking PYZ
+6195 INFO: checking PKG
+6195 INFO: Building because toc changed
+6195 INFO: Building PKG (CArchive) SOC-Scanner.pkg
+8155 INFO: Building PKG (CArchive) SOC-Scanner.pkg completed successfully.
+8158 INFO: Bootloader D:\College SOC Analyst\Projects\Final Project\WinPython\Python3.8\WPy64-38100\python-3.8.10.amd64\lib\site-packages\PyInstaller\bootloader\Windows-64bit-intel\run.exe
+8158 INFO: checking EXE
+8158 INFO: Building because toc changed
+8158 INFO: Building EXE from EXE-00.toc
+8160 INFO: Copying bootloader EXE to D:\College SOC Analyst\Projects\Final Project\dist\SOC-Scanner.exe
+8207 INFO: Copying icon to EXE
+8232 INFO: Copying 0 resources to EXE
+8232 INFO: Embedding manifest in EXE
+8260 INFO: Appending PKG archive to EXE
+8420 INFO: Fixing EXE headers
+8657 INFO: Building EXE from EXE-00.toc completed successfully.
+8658 INFO: Build complete! The results are available in: D:\College SOC Analyst\Projects\Final Project\dist
