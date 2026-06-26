@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 color 0A
 echo ============================================================
-echo   SOC EMERGENCY SCANNER — FIRST-TIME SETUP
+echo   SOC EMERGENCY SCANNER -- FIRST-TIME SETUP
 echo ============================================================
 echo.
 echo  This script will automatically download:
@@ -19,6 +19,17 @@ echo        You only need to run this ONCE.
 echo.
 pause
 
+:: ── Verify curl.exe is available (built into Windows 10/11) ──────────────────
+curl.exe --version >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] curl.exe not found.
+    echo         This requires Windows 10 or Windows 11.
+    echo         Please update your Windows version and try again.
+    pause
+    exit /b 1
+)
+echo [OK] curl.exe found.
+
 :: ── Create required folders ───────────────────────────────────────────────────
 if not exist "%~dp0bin"     mkdir "%~dp0bin"
 if not exist "%~dp0models"  mkdir "%~dp0models"
@@ -26,77 +37,128 @@ if not exist "%~dp0reports" mkdir "%~dp0reports"
 echo [OK] Folders ready.
 echo.
 
-:: ═══════════════════════════════════════════════════════════════════════════
-:: STEP 1 — Download Qwen2.5 AI Model (~4.4 GB)
-:: ═══════════════════════════════════════════════════════════════════════════
+:: =============================================================================
+:: STEP 1 -- Download Qwen2.5 AI Model (~4.4 GB)
+:: =============================================================================
 set MODEL_FILE=%~dp0models\Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
-set MODEL_URL=https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
+set MODEL_URL=https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-1M-GGUF/resolve/main/Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
 
 if exist "%MODEL_FILE%" (
-    echo [SKIP] AI model already present.
+    for %%A in ("%MODEL_FILE%") do set EXISTING_SIZE=%%~zA
+    if !EXISTING_SIZE! GTR 3000000000 (
+        echo [SKIP] AI model already present and valid.
+    ) else (
+        echo [INFO] Existing model file looks incomplete. Re-downloading...
+        del "%MODEL_FILE%"
+        goto DOWNLOAD_MODEL
+    )
 ) else (
+    :DOWNLOAD_MODEL
     echo [1/3] Downloading AI model from HuggingFace...
     echo       File size: ~4.4 GB. This will take time. Do NOT close this window.
     echo.
-    powershell -Command "& { $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri '%MODEL_URL%' -OutFile '%MODEL_FILE%' -UseBasicParsing }"
-    if errorlevel 1 (
-        echo.
-        echo [ERROR] Model download failed.
-        echo         Check your internet connection and try again.
+    curl.exe -L --progress-bar -o "%MODEL_FILE%" "%MODEL_URL%"
+    echo.
+
+    :: Validate: file must be larger than 3 GB to be real
+    if not exist "%MODEL_FILE%" (
+        echo [ERROR] Model file was not created. Download failed.
         pause
         exit /b 1
     )
-    echo [OK] AI model downloaded.
+    for %%A in ("%MODEL_FILE%") do set MODEL_SIZE=%%~zA
+    if !MODEL_SIZE! LSS 3000000000 (
+        echo [ERROR] Downloaded file is too small - it is not the real model.
+        echo         Download may have been blocked or interrupted.
+        del "%MODEL_FILE%"
+        pause
+        exit /b 1
+    )
+    echo [OK] AI model downloaded successfully.
 )
 echo.
 
-:: ═══════════════════════════════════════════════════════════════════════════
-:: STEP 2 — Download ClamAV Signature Database (~33 MB)
-:: ═══════════════════════════════════════════════════════════════════════════
+:: =============================================================================
+:: STEP 2 -- Download ClamAV Signature Database (~33 MB)
+:: =============================================================================
 set CLAMAV_FILE=%~dp0bin\clamav.hsb
 set CLAMAV_URL=https://database.clamav.net/main.hsb
 
 if exist "%CLAMAV_FILE%" (
-    echo [SKIP] ClamAV database already present.
-) else (
-    echo [2/3] Downloading ClamAV signature database...
-    powershell -Command "& { $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri '%CLAMAV_URL%' -OutFile '%CLAMAV_FILE%' -UseBasicParsing }"
-    if errorlevel 1 (
-        echo [WARN] ClamAV download failed. App will still work without it.
+    for %%A in ("%CLAMAV_FILE%") do set EXISTING_SIZE=%%~zA
+    if !EXISTING_SIZE! GTR 10000000 (
+        echo [SKIP] ClamAV database already present and valid.
     ) else (
-        echo [OK] ClamAV database downloaded.
+        del "%CLAMAV_FILE%"
+        goto DOWNLOAD_CLAMAV
+    )
+) else (
+    :DOWNLOAD_CLAMAV
+    echo [2/3] Downloading ClamAV signature database...
+    curl.exe -L -A "ClamAV/1.0.0" --progress-bar -o "%CLAMAV_FILE%" "%CLAMAV_URL%"
+    echo.
+
+    :: Validate: file must be larger than 10 MB to be real (not an HTML error page)
+    if exist "%CLAMAV_FILE%" (
+        for %%A in ("%CLAMAV_FILE%") do set CLAMAV_SIZE=%%~zA
+        if !CLAMAV_SIZE! GTR 10000000 (
+            echo [OK] ClamAV database downloaded.
+        ) else (
+            echo [WARN] ClamAV download was blocked by the server.
+            echo        The app will still work - just with fewer offline signatures.
+            del "%CLAMAV_FILE%" 2>nul
+        )
+    ) else (
+        echo [WARN] ClamAV download failed. App will still work without it.
     )
 )
 echo.
 
-:: ═══════════════════════════════════════════════════════════════════════════
-:: STEP 3 — Download MalwareBazaar Hash Database (~70 MB)
-:: ═══════════════════════════════════════════════════════════════════════════
+:: =============================================================================
+:: STEP 3 -- Download MalwareBazaar Hash Database (~70 MB)
+:: =============================================================================
 set BAZAAR_FILE=%~dp0bin\bazaar.hsb
 set BAZAAR_URL=https://bazaar.abuse.ch/export/txt/sha256/full/
 
 if exist "%BAZAAR_FILE%" (
-    echo [SKIP] MalwareBazaar database already present.
-) else (
-    echo [3/3] Downloading MalwareBazaar hash database...
-    powershell -Command "& { $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri '%BAZAAR_URL%' -OutFile '%BAZAAR_FILE%' -UseBasicParsing }"
-    if errorlevel 1 (
-        echo [WARN] MalwareBazaar download failed. App will still work without it.
+    for %%A in ("%BAZAAR_FILE%") do set EXISTING_SIZE=%%~zA
+    if !EXISTING_SIZE! GTR 10000000 (
+        echo [SKIP] MalwareBazaar database already present and valid.
     ) else (
-        echo [OK] MalwareBazaar database downloaded.
+        del "%BAZAAR_FILE%"
+        goto DOWNLOAD_BAZAAR
+    )
+) else (
+    :DOWNLOAD_BAZAAR
+    echo [3/3] Downloading MalwareBazaar hash database...
+    curl.exe -L --progress-bar -o "%BAZAAR_FILE%" "%BAZAAR_URL%"
+    echo.
+
+    :: Validate: file must be larger than 10 MB to be real
+    if exist "%BAZAAR_FILE%" (
+        for %%A in ("%BAZAAR_FILE%") do set BAZAAR_SIZE=%%~zA
+        if !BAZAAR_SIZE! GTR 10000000 (
+            echo [OK] MalwareBazaar database downloaded.
+        ) else (
+            echo [WARN] MalwareBazaar download was blocked or failed.
+            echo        The app will still work - just with fewer offline signatures.
+            del "%BAZAAR_FILE%" 2>nul
+        )
+    ) else (
+        echo [WARN] MalwareBazaar download failed. App will still work without it.
     )
 )
 echo.
 
-:: ═══════════════════════════════════════════════════════════════════════════
+:: =============================================================================
 :: DONE
-:: ═══════════════════════════════════════════════════════════════════════════
+:: =============================================================================
 echo ============================================================
 echo   SETUP COMPLETE!
 echo ============================================================
 echo.
-echo   Everything is ready. To launch the scanner:
-echo   - Double-click SOC-Scanner.exe
+echo   To launch the scanner:
+echo   -- Double-click SOC-Scanner.exe
 echo.
 echo   To put this on a USB drive:
 echo   1. Copy SOC-Scanner.exe  to USB
