@@ -1,168 +1,90 @@
 # 🛡️ SOC Emergency AI Scanner — "Detection on a Stick"
 
-> **Final Project — Certified SOC Analyst Course | Option 2: Security Automation Tool**
-> A fully offline, USB-portable incident response triage tool powered by a locally hosted LLM.
+> Final Project — Certified SOC Analyst Course | Security Automation Tool
+> A fully offline, USB-portable incident response triage tool powered by a locally hosted AI.
 
 ---
 
-## ⚡ Quick Start (Fresh Clone)
+## 🚀 How to Use (3 Steps, No Installs)
 
-> **You only need to do this once.** After setup, just copy the 3 folders + exe to a USB and go.
+### Step 1 — Download this repository
+Click **Code → Download ZIP** on GitHub, then extract it. Or clone it.
 
-### Prerequisites — Install These First
+### Step 2 — Run `setup.bat`
+Double-click `setup.bat`. It will automatically download:
+- The Qwen2.5 AI model (~4.4 GB) — **this takes time, leave it running**
+- ClamAV malware signature database (~33 MB)
+- MalwareBazaar hash database (~70 MB)
 
-| Tool | Download | Notes |
-|---|---|---|
-| **Python 3.8+** | https://www.python.org/downloads/ | ✅ Check "Add Python to PATH" during install |
-| **Node.js (LTS)** | https://nodejs.org/ | Required to build the React UI |
+No Python, no installs, no browser required. Just wait for it to finish.
 
-### One Command to Set Everything Up
-
-```
-1. Clone or download this repository
-2. Double-click  setup.bat
-3. Wait ~15-30 min (downloads the 4.4 GB AI model)
-4. Done — SOC-Scanner.exe will be ready in the project folder
-```
-
-`setup.bat` handles everything automatically:
-- ✅ Installs Python dependencies (`pip install -r requirements.txt`)
-- ✅ Downloads the **Qwen2.5 AI model** (~4.4 GB from HuggingFace)
-- ✅ Downloads **ClamAV** malware signature database (~33 MB)
-- ✅ Downloads **MalwareBazaar** hash database (~70 MB)
-- ✅ Runs `npm install` + `npm run build` for the React frontend
-- ✅ Builds `SOC-Scanner.exe` with PyInstaller
+### Step 3 — Launch the scanner
+Double-click **`SOC-Scanner.exe`**
 
 ---
 
-## 📁 What Gets Created After Setup
+## 💾 Deploying to USB
 
-```
-Final Project/
-├── SOC-Scanner.exe       ← The built app (run this on the target machine)
-├── bin/
-│   ├── llama-server.exe  ← AI engine (included in repo, no download needed)
-│   ├── *.dll             ← llama.cpp runtime DLLs (included in repo)
-│   ├── clamav.hsb        ← Downloaded by setup.bat
-│   └── bazaar.hsb        ← Downloaded by setup.bat
-├── models/
-│   └── Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf  ← Downloaded by setup.bat (~4.4 GB)
-└── reports/              ← Scan reports saved here at runtime
-```
-
-> **For the USB:** Copy `SOC-Scanner.exe` + `bin\` + `models\` + an empty `reports\` folder.
-> The exe finds `bin\` and `models\` automatically from whatever folder it's launched from.
-
----
-
-## 🚀 USB Deployment
-
-After running `setup.bat`, copy these to your USB drive:
+After `setup.bat` finishes, copy these 4 items to your USB drive:
 
 ```
 USB Drive/
 ├── SOC-Scanner.exe    ← double-click to launch
-├── bin\               ← AI engine + signature databases
+├── bin\               ← AI engine + malware databases
 ├── models\            ← Qwen2.5 AI model
-└── reports\           ← empty folder (reports saved here during scans)
+└── reports\           ← create this as an empty folder
 ```
 
-To update the USB after making code changes, run `update_usb.bat` *(requires WinPython at the hardcoded path — dev machine only)*.
+The scanner is 100% offline. No internet needed once deployed. It auto-detects the USB path.
 
 ---
 
-## 🔧 Manual Build (if setup.bat fails)
+## 📁 What's in This Repository
 
-```powershell
-# 1. Install Python dependencies
-pip install -r requirements.txt
-
-# 2. Build the React frontend
-cd frontend
-npm install
-npm run build
-cd ..
-
-# 3. Build the exe
-python -m PyInstaller --onefile --add-data "frontend\build;frontend\build" app.py --name SOC-Scanner --noconfirm
 ```
-
-The exe will be at `dist\SOC-Scanner.exe`. Copy it to the project root.
+├── SOC-Scanner.exe     ← Ready-to-run app (Python already bundled inside)
+├── setup.bat           ← One-click setup: downloads model + databases
+├── bin\
+│   ├── llama-server.exe   ← AI inference engine
+│   ├── *.dll              ← Runtime libraries for the AI engine
+│   ├── clamav.hsb         ← Downloaded by setup.bat (not in repo, ~33 MB)
+│   └── bazaar.hsb         ← Downloaded by setup.bat (not in repo, ~70 MB)
+├── models\
+│   └── *.gguf             ← Downloaded by setup.bat (not in repo, ~4.4 GB)
+├── reports\               ← Scan reports saved here at runtime
+├── app.py              ← Python source (backend + triage engine)
+├── frontend\src\       ← React UI source code
+└── build_exe.bat       ← For developers: rebuild the exe from source
+```
 
 ---
 
-## 🔍 How the Triage Engine Works
+## 🔍 How the Scanner Works
 
 | Stage | What Happens |
 |---|---|
-| **1. File Walk** | Recursively scans the target directory, skipping OS system folders |
-| **2. Scoring** | Each file is scored by 3 rules: SHA-256 offline DB lookup (+100), unsigned PE binary (+50), system-binary name masquerading (+50) |
-| **3. Top-10 Extraction** | Top 10 highest-scoring files extracted for AI analysis |
-| **4. AI Prompt** | Aggregated forensic data sent to the local Qwen2.5 model via llama-server |
-| **5. JSON Report** | AI returns structured report: risk level, attack summary, timeline, recommendations |
-
----
-
-## 🎨 UI Features
-
-- **OFFLINE / USB MODE ACTIVE** badge with pulsing green glow
-- **AI Engine Status** polling (ready / initializing / offline)
-- **Animated scan progress** with live status messages
-- **Risk Badge** with neon red/orange/green glow per threat level
-- **Attack Story** — narrative explanation of the incident
-- **Interactive Attack Timeline** — chronological event reconstruction
-- **Recommendations Box** — SOC mitigation steps
-- **Suspect File Table** — files ranked by suspicion score
+| **File Walk** | Scans the target directory for suspicious files |
+| **Scoring** | Scores each file: SHA-256 database match (+100), unsigned binary (+50), name masquerading (+50) |
+| **Top-10** | Top 10 most suspicious files extracted for AI review |
+| **AI Analysis** | Local Qwen2.5 model analyzes the files — no internet, fully offline |
+| **Report** | Structured incident report: risk level, attack story, timeline, recommendations |
 
 ---
 
 ## 🔒 Security & Privacy
 
-- **Zero network calls** — all analysis runs 100% locally
-- **No data leaves the machine** — the LLM is fully offline
-- `CREATE_NO_WINDOW` flag ensures no console popups on the target
-- AI process auto-terminates when the GUI window is closed
+- **Zero network calls** — everything runs locally
+- **No data leaves the machine** — fully air-gapped
+- AI process auto-terminates when the window is closed
 
 ---
 
-## 📦 Repository Structure
+## 🛠️ For Developers (Rebuilding the EXE)
+
+If you modify `app.py` or the frontend and want to rebuild the exe:
 
 ```
-Final Project/
-├── app.py              ← Python backend (PyWebView + triage engine + AI integration)
-├── requirements.txt    ← Python dependencies
-├── setup.bat           ← One-click first-time setup (clone this → run this)
-├── build_exe.bat       ← Rebuild the exe only (no downloads)
-├── update_usb.bat      ← Full rebuild + deploy to USB drive J:\
-├── run.bat             ← Run app.py directly (dev mode, no exe)
-├── SOC-Scanner.spec    ← PyInstaller config
-├── README.md           ← This file
-├── bin/                ← llama.cpp runtime DLLs + llama-server.exe (in repo)
-│   ├── llama-server.exe
-│   ├── llama.dll, ggml.dll, ggml-cpu-*.dll ...
-│   ├── clamav.hsb      ← NOT in repo — downloaded by setup.bat
-│   └── bazaar.hsb      ← NOT in repo — downloaded by setup.bat
-├── models/             ← NOT in repo — downloaded by setup.bat (~4.4 GB)
-│   └── Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
-└── frontend/           ← React (Vite + Tailwind) source code
-    ├── src/
-    │   ├── App.jsx     ← Main UI component
-    │   ├── index.jsx
-    │   └── index.css
-    ├── index.html
-    ├── package.json
-    ├── vite.config.js
-    ├── tailwind.config.js
-    └── postcss.config.js
+1. Install Python 3.8+  →  pip install pyinstaller pywebview requests
+2. Install Node.js      →  nodejs.org
+3. Run build_exe.bat
 ```
-
----
-
-## ⚠️ What Is NOT in This Repository (Too Large for GitHub)
-
-| File | Size | How to Get It |
-|---|---|---|
-| `models/*.gguf` | ~4.4 GB | **Automatic** — `setup.bat` downloads it |
-| `bin/bazaar.hsb` | ~70 MB | **Automatic** — `setup.bat` downloads it |
-| `bin/clamav.hsb` | ~33 MB | **Automatic** — `setup.bat` downloads it |
-| `SOC-Scanner.exe` | ~13 MB | **Automatic** — `setup.bat` builds it |
