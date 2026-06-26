@@ -41,12 +41,14 @@ echo.
 :: STEP 1 -- Download Qwen2.5 AI Model (~4.4 GB)
 :: =============================================================================
 set MODEL_FILE=%~dp0models\Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
-set MODEL_URL_1=https://huggingface.co/tensorblock/Qwen2.5-7B-Instruct-1M-GGUF/resolve/main/Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
+set MODEL_URL_1=https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-1M-GGUF/resolve/main/Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
 set MODEL_URL_2=https://huggingface.co/lmstudio-community/Qwen2.5-7B-Instruct-1M-GGUF/resolve/main/Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
 
+:: NOTE: Windows batch IF can only compare up to 2,147,483,647 (32-bit signed int).
+:: The model is ~4.4 GB so we use 1,000,000,000 (1 GB) as our validity threshold.
 if exist "%MODEL_FILE%" (
     for %%A in ("%MODEL_FILE%") do set EXISTING_SIZE=%%~zA
-    if !EXISTING_SIZE! GTR 3000000000 (
+    if !EXISTING_SIZE! GTR 1000000000 (
         echo [SKIP] AI model already present and valid.
         goto MODEL_DONE
     ) else (
@@ -63,12 +65,12 @@ echo       Trying mirror 1 of 2...
 curl.exe -L --fail --progress-bar -o "%MODEL_FILE%" "%MODEL_URL_1%"
 echo.
 
-:: Validate: file must be larger than 3 GB to be real
+:: Validate: file must be > 1 GB (Windows batch int max is 2,147,483,647 - use 1 GB threshold)
 set MODEL_SIZE=0
 if exist "%MODEL_FILE%" (
     for %%A in ("%MODEL_FILE%") do set MODEL_SIZE=%%~zA
 )
-if !MODEL_SIZE! GTR 3000000000 (
+if !MODEL_SIZE! GTR 1000000000 (
     echo [OK] AI model downloaded successfully.
     goto MODEL_DONE
 )
@@ -83,7 +85,7 @@ set MODEL_SIZE=0
 if exist "%MODEL_FILE%" (
     for %%A in ("%MODEL_FILE%") do set MODEL_SIZE=%%~zA
 )
-if !MODEL_SIZE! GTR 3000000000 (
+if !MODEL_SIZE! GTR 1000000000 (
     echo [OK] AI model downloaded successfully.
     goto MODEL_DONE
 )
@@ -94,7 +96,7 @@ echo.
 echo [ERROR] Could not download the AI model from either mirror.
 echo.
 echo  Please download it manually:
-echo  1. Go to: https://huggingface.co/tensorblock/Qwen2.5-7B-Instruct-1M-GGUF
+echo  1. Go to: https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-1M-GGUF
 echo  2. Download: Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
 echo  3. Place it in the 'models' folder next to this script
 echo.
