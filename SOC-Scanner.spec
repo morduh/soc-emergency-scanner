@@ -1,4 +1,18 @@
 # -*- mode: python ; coding: utf-8 -*-
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# SOC-Scanner.spec — FOR DEVELOPERS ONLY
+#
+# PURPOSE : PyInstaller build configuration used to package app.py and the
+#           compiled React frontend into a single standalone SOC-Scanner.exe.
+#           Only needed if you are rebuilding the exe from source.
+#           End users do NOT need this file — SOC-Scanner.exe is already
+#           included in the repository and ready to use.
+#
+# HOW TO USE:
+#   pyinstaller SOC-Scanner.spec
+#   (or just run build_exe.bat which handles everything automatically)
+# ─────────────────────────────────────────────────────────────────────────────
 
 
 a = Analysis(
