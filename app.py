@@ -332,6 +332,48 @@ def _report_progress(phase: str, percent: int, current_file: str = "") -> None:
 
 
 # ---------------------------------------------------------------------------
+# Helper: Deduplicate scanned directory paths for the report summary
+# ---------------------------------------------------------------------------
+
+def _deduplicate_dirs(visited_roots: set) -> list:
+    """
+    Given a set of every directory path visited during a scan, return a
+    deduplicated list of only the unique top-level ancestors.
+
+    Example: if visited_roots contains
+        C:\\Users\\yaron\\AppData\\Local\\Temp\\foo
+        C:\\Users\\yaron\\AppData\\Local\\Temp\\bar
+        C:\\Users\\yaron\\AppData\\Local\\Temp\\baz\\sub
+        C:\\Windows\\System32\\Winevt\\Logs
+        C:\\Windows\\System32\\Winevt\\Logs\\sub
+
+    The function returns:
+        C:\\Users\\yaron\\AppData\\Local\\Temp
+        C:\\Windows\\System32\\Winevt\\Logs
+
+    Algorithm: sort paths, then for each path only keep it if it is NOT
+    already a sub-path of something already accepted.
+    """
+    if not visited_roots:
+        return []
+
+    sorted_paths = sorted(visited_roots, key=lambda p: p.lower())
+    result: list[str] = []
+
+    for path in sorted_paths:
+        norm = os.path.normcase(path)
+        # Check if this path starts with any already-accepted ancestor
+        is_child = any(
+            norm.startswith(os.path.normcase(accepted) + os.sep)
+            for accepted in result
+        )
+        if not is_child:
+            result.append(path)
+
+    return result
+
+
+# ---------------------------------------------------------------------------
 # CyberAPI — Methods exposed to the JavaScript frontend via PyWebView
 # ---------------------------------------------------------------------------
 
@@ -831,6 +873,10 @@ class CyberAPI:
         total_files_found   = 0
         total_folders_found = 0
         files_processed     = 0  # for live progress reporting
+        visited_roots: set[str] = set()  # for scanned-folders summary
+
+        # Normalise EXE_DIR so we never scan the scanner's own folder
+        _exe_dir_norm = os.path.normcase(os.path.normpath(EXE_DIR))
 
         _report_progress("SCANNING", 5, "Starting scan of 8 high-value locations...")
 
@@ -840,6 +886,18 @@ class CyberAPI:
             try:
                 for root, dirs, files in os.walk(folder_path, followlinks=False):
                     total_folders_found += 1
+
+                    # ── Never scan the scanner's own directory ───────────────────
+                    # This prevents the app's own unsigned exe/DLLs from being
+                    # flagged as suspicious in the report.
+                    if os.path.normcase(os.path.normpath(root)).startswith(_exe_dir_norm):
+                        dirs[:] = []
+                        skipped += len(files)
+                        continue
+
+                    # Track the top-level folder for the scanned-folders summary
+                    visited_roots.add(root)
+
                     # ── Directory exclusion list ─────────────────────────────────
                     # Skip _MEI* dirs: these are PyInstaller's own temp extraction
                     # folders — scanning them floods the prompt with thousands of
@@ -1002,10 +1060,14 @@ class CyberAPI:
             print(f"[WARN] AI analysis returned an error: {result_obj['error']}")
             return json.dumps(result_obj, ensure_ascii=False)
 
+        # Build deduplicated scanned-folders list (unique parent dirs only)
+        scanned_dirs = _deduplicate_dirs(visited_roots)
+
         result_obj["scanned_files"]         = file_meta_list
         result_obj["total_suspicious"]      = len(scored_files)
         result_obj["total_files_scanned"]   = total_files_found
         result_obj["total_folders_scanned"] = total_folders_found
+        result_obj["scanned_dirs"]          = scanned_dirs
         scan_ts = datetime.now()
         result_obj["scan_timestamp"] = scan_ts.isoformat()
 
@@ -1053,12 +1115,26 @@ class CyberAPI:
         total_files_found   = 0  # every file seen, before any filtering
         total_folders_found = 0  # every directory visited by os.walk
         files_processed     = 0  # for live progress reporting
+        visited_roots: set[str] = set()  # for scanned-folders summary
+
+        # Normalise EXE_DIR so we never scan the scanner's own folder
+        _exe_dir_norm = os.path.normcase(os.path.normpath(EXE_DIR))
 
         _report_progress("SCANNING", 5, f"Starting scan: {folder_path}")
 
         try:
             for root, dirs, files in os.walk(folder_path, followlinks=False):
                 total_folders_found += 1
+
+                # ── Never scan the scanner's own directory ───────────────────
+                if os.path.normcase(os.path.normpath(root)).startswith(_exe_dir_norm):
+                    dirs[:] = []
+                    skipped += len(files)
+                    continue
+
+                # Track the folder for the scanned-folders summary
+                visited_roots.add(root)
+
                 # Skip clearly irrelevant system dirs to speed up scan
                 dirs[:] = [
                     d for d in dirs
@@ -1192,11 +1268,15 @@ class CyberAPI:
             print(f"[WARN] AI analysis returned an error: {result_obj['error']}")
             return json.dumps(result_obj, ensure_ascii=False)
 
+        # Build deduplicated scanned-folders list (unique parent dirs only)
+        scanned_dirs = _deduplicate_dirs(visited_roots)
+
         # Merge scan metadata into result for the UI
         result_obj["scanned_files"]         = file_meta_list
         result_obj["total_suspicious"]      = len(scored_files)
         result_obj["total_files_scanned"]   = total_files_found
         result_obj["total_folders_scanned"] = total_folders_found
+        result_obj["scanned_dirs"]          = scanned_dirs
         scan_ts = datetime.now()
         result_obj["scan_timestamp"] = scan_ts.isoformat()
 
@@ -1323,6 +1403,19 @@ class CyberAPI:
                         "========================================================================"
                     ]
                     _append_files(warning_files)
+
+            # ── Scanned Folders Summary ──────────────────────────────────────
+            # Show unique top-level directories that were scanned (not every file).
+            scanned_dirs = result_obj.get("scanned_dirs", [])
+            if scanned_dirs:
+                lines += [
+                    "",
+                    "[ תיקיות שנסרקו / SCANNED LOCATIONS ]",
+                    "-" * 72,
+                ]
+                for d in sorted(scanned_dirs):
+                    lines.append(f"  {d}")
+                lines.append("")
 
             lines += [
                 separator,
