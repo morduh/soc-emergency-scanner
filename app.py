@@ -911,6 +911,7 @@ class CyberAPI:
                             "crashreports", "crashpad",
                             "ebwebview",   # PyWebView's WebView2 temp data dir
                             "shadercache", "pkimetadata", "subresource filter",
+                            "cache_data", "code cache", "default", "profile 1",
                         }
                         and not d.startswith("_MEI")   # PyInstaller temp bundles
                     ]
@@ -1141,7 +1142,13 @@ class CyberAPI:
                     if d.lower() not in {
                         "windows", "program files", "program files (x86)",
                         ".git", "node_modules", "__pycache__",
+                        "cache", "caches", "logs", "log",
+                        "crashreports", "crashpad",
+                        "ebwebview",   # PyWebView's WebView2 temp data dir
+                        "shadercache", "pkimetadata", "subresource filter",
+                        "cache_data", "code cache", "default", "profile 1",
                     }
+                    and not d.startswith("_MEI")   # PyInstaller temp bundles
                 ]
 
                 for filename in files:
@@ -1614,7 +1621,7 @@ class PresetAPIHandler(BaseHTTPRequestHandler):
             if payload.get("preset") == "bank-lab" and GLOBAL_API:
                 # Trigger the preset synchronously to hold the connection
                 # and return the final JSON payload directly back to React fetch()
-                result_json = GLOBAL_API.run_bank_lab_preset()
+                result_json = GLOBAL_API._do_run_bank_lab_preset()
                 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
