@@ -41,41 +41,67 @@ echo.
 :: STEP 1 -- Download Qwen2.5 AI Model (~4.4 GB)
 :: =============================================================================
 set MODEL_FILE=%~dp0models\Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
-set MODEL_URL=https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-1M-GGUF/resolve/main/Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
+set MODEL_URL_1=https://huggingface.co/tensorblock/Qwen2.5-7B-Instruct-1M-GGUF/resolve/main/Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
+set MODEL_URL_2=https://huggingface.co/lmstudio-community/Qwen2.5-7B-Instruct-1M-GGUF/resolve/main/Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
 
 if exist "%MODEL_FILE%" (
     for %%A in ("%MODEL_FILE%") do set EXISTING_SIZE=%%~zA
     if !EXISTING_SIZE! GTR 3000000000 (
         echo [SKIP] AI model already present and valid.
+        goto MODEL_DONE
     ) else (
         echo [INFO] Existing model file looks incomplete. Re-downloading...
         del "%MODEL_FILE%"
-        goto DOWNLOAD_MODEL
     )
-) else (
-    :DOWNLOAD_MODEL
-    echo [1/3] Downloading AI model from HuggingFace...
-    echo       File size: ~4.4 GB. This will take time. Do NOT close this window.
-    echo.
-    curl.exe -L --progress-bar -o "%MODEL_FILE%" "%MODEL_URL%"
-    echo.
-
-    :: Validate: file must be larger than 3 GB to be real
-    if not exist "%MODEL_FILE%" (
-        echo [ERROR] Model file was not created. Download failed.
-        pause
-        exit /b 1
-    )
-    for %%A in ("%MODEL_FILE%") do set MODEL_SIZE=%%~zA
-    if !MODEL_SIZE! LSS 3000000000 (
-        echo [ERROR] Downloaded file is too small - it is not the real model.
-        echo         Download may have been blocked or interrupted.
-        del "%MODEL_FILE%"
-        pause
-        exit /b 1
-    )
-    echo [OK] AI model downloaded successfully.
 )
+
+echo [1/3] Downloading AI model from HuggingFace...
+echo       File size: ~4.4 GB. This will take time. Do NOT close this window.
+echo.
+
+echo       Trying mirror 1 of 2...
+curl.exe -L --fail --progress-bar -o "%MODEL_FILE%" "%MODEL_URL_1%"
+echo.
+
+:: Validate: file must be larger than 3 GB to be real
+set MODEL_SIZE=0
+if exist "%MODEL_FILE%" (
+    for %%A in ("%MODEL_FILE%") do set MODEL_SIZE=%%~zA
+)
+if !MODEL_SIZE! GTR 3000000000 (
+    echo [OK] AI model downloaded successfully.
+    goto MODEL_DONE
+)
+
+:: First mirror failed - try second
+echo       Mirror 1 failed. Trying mirror 2 of 2...
+if exist "%MODEL_FILE%" del "%MODEL_FILE%"
+curl.exe -L --fail --progress-bar -o "%MODEL_FILE%" "%MODEL_URL_2%"
+echo.
+
+set MODEL_SIZE=0
+if exist "%MODEL_FILE%" (
+    for %%A in ("%MODEL_FILE%") do set MODEL_SIZE=%%~zA
+)
+if !MODEL_SIZE! GTR 3000000000 (
+    echo [OK] AI model downloaded successfully.
+    goto MODEL_DONE
+)
+
+:: Both mirrors failed
+if exist "%MODEL_FILE%" del "%MODEL_FILE%"
+echo.
+echo [ERROR] Could not download the AI model from either mirror.
+echo.
+echo  Please download it manually:
+echo  1. Go to: https://huggingface.co/tensorblock/Qwen2.5-7B-Instruct-1M-GGUF
+echo  2. Download: Qwen2.5-7B-Instruct-1M-Q4_K_M.gguf
+echo  3. Place it in the 'models' folder next to this script
+echo.
+pause
+exit /b 1
+
+:MODEL_DONE
 echo.
 
 :: =============================================================================
