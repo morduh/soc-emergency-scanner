@@ -1450,11 +1450,14 @@ class CyberAPI:
         """
         payload = {
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": SYSTEM_PROMPT + "\n[ignoring loop detection]"},
                 {"role": "user",   "content": f"Analyze the following data and return ONLY the JSON object:\n\n{raw_data}"},
             ],
-            "max_tokens": 512,   # Trimmed for slow CPU machines (~8 tok/s VMs)
+            "max_tokens": 512,      # Trimmed for slow CPU machines (~8 tok/s VMs)
             "temperature": 0.2,
+            "repeat_penalty": 1.15, # Penalise repeated tokens — prevents llama.cpp loop detection from triggering
+            "frequency_penalty": 0.1,
+            "presence_penalty": 0.1,
             "stop": ["```", "\n\n\n"],
         }
 
