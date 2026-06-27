@@ -1635,8 +1635,11 @@ class CyberAPI:
                         next_char = json_candidate[i+1]
                         if next_char in ['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u']:
                             fixed_text += char
+                            fixed_text += next_char
                         else:
                             fixed_text += '\\\\'
+                            fixed_text += next_char
+                        i += 1
                     else:
                         fixed_text += '\\\\'
                 else:
