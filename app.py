@@ -220,6 +220,7 @@ Return ONLY this exact JSON structure:
       "time": "HH:MM", 
       "event": "Detailed English explanation of the attacker's action and its impact.", 
       "proof": "EXACT raw script snippet, command line, or registry value extracted from the logs.",
+      "path": "The exact absolute file path or registry key associated with this event. Leave empty if none.",
       "type": "file" | "network" | "persistence"
     }
   ],
@@ -1445,8 +1446,11 @@ class CyberAPI:
                 t    = event.get("time", "??:??")
                 evt  = event.get("event", "")
                 prf  = event.get("proof", "")
+                pth  = event.get("path", "")
                 etype = event.get("type", "file").upper()
                 lines.append(f"  [{i:02d}] {t}  [{etype}]  {evt}")
+                if pth:
+                    lines.append(f"       -> PATH: {pth}")
                 if prf:
                     lines.append(f"       -> PROOF: {prf}")
 

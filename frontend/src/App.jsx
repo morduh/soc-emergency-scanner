@@ -329,8 +329,22 @@ function TimelineItem({ item, index }) {
                 {typeLabel}
               </span>
             </div>
+            {item.path && (
+              <button
+                onClick={() => callPython('open_file_location', item.path)}
+                title="Open location"
+                className="flex-shrink-0 px-2 py-1 rounded border border-slate-700 bg-slate-800/50 hover:bg-slate-700 text-slate-300 hover:text-white transition-all text-xs"
+              >
+                📁 Open
+              </button>
+            )}
           </div>
           <p className="text-sm text-slate-200 leading-relaxed">{item.event}</p>
+          {item.proof && (
+            <pre className="text-xs font-mono bg-slate-900/60 p-3 rounded-lg border border-slate-800 text-slate-400 whitespace-pre-wrap overflow-x-auto mt-2">
+              {item.proof}
+            </pre>
+          )}
         </div>
       </div>
     </div>
