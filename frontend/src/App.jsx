@@ -99,7 +99,7 @@ function Header({ aiStatus }) {
   );
 }
 
-function ScanControl({ folderPath, setFolderPath, onScan, onPresetScan, loading }) {
+function ScanControl({ folderPath, setFolderPath, onScan, onPresetScan, loading, aiStatus }) {
   return (
     <div className="glass-card rounded-2xl border border-slate-800 p-6 space-y-6">
       
@@ -107,7 +107,7 @@ function ScanControl({ folderPath, setFolderPath, onScan, onPresetScan, loading 
       <div>
         <button
           onClick={onPresetScan}
-          disabled={loading}
+          disabled={loading || aiStatus !== 'ready'}
           className="w-full relative px-6 py-4 rounded-xl font-black text-sm tracking-widest uppercase text-white bg-gradient-to-r from-purple-600 to-indigo-700 border-2 border-purple-500 hover:from-purple-500 hover:to-indigo-600 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 overflow-hidden group"
         >
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
@@ -146,7 +146,7 @@ function ScanControl({ folderPath, setFolderPath, onScan, onPresetScan, loading 
           <button
             id="start-scan-btn"
             onClick={onScan}
-            disabled={loading || !folderPath.trim()}
+            disabled={loading || !folderPath.trim() || aiStatus !== 'ready'}
             className="relative px-6 py-3 rounded-xl font-bold text-sm tracking-widest uppercase text-white bg-gradient-to-r from-red-600 to-red-700 border border-red-500 hover:from-red-500 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-red-900/50 hover:shadow-red-700/60 hover:scale-105 active:scale-95 flex items-center gap-2"
           >
             <Icons.Scan />
@@ -431,9 +431,18 @@ function FileTable({ files }) {
                     👉 {f.path.replace(/\\/g, '\\').split('\\').filter(Boolean).pop() || f.path}
                   </p>
                   {/* Full absolute path — wraps naturally, never truncated */}
-                  <p className="text-xs text-slate-400 break-all whitespace-pre-wrap leading-relaxed mb-1">
-                    {f.path}
-                  </p>
+                  <div className="flex items-start gap-2 mb-1">
+                    <p className="text-xs text-slate-400 break-all whitespace-pre-wrap leading-relaxed flex-1">
+                      {f.path}
+                    </p>
+                    <button
+                      onClick={() => callPython('open_file_location', f.path)}
+                      title="Open location"
+                      className="flex-shrink-0 px-2 py-1 rounded border border-slate-700 bg-slate-800/50 hover:bg-slate-700 text-slate-300 hover:text-white transition-all text-xs"
+                    >
+                      📁 Open
+                    </button>
+                  </div>
                   <p className="text-xs text-slate-600">
                     {f.extension}&nbsp;&bull;&nbsp;{(f.size / 1024).toFixed(1)} KB&nbsp;&bull;&nbsp;{f.modified}
                   </p>
@@ -733,6 +742,7 @@ export default function App() {
             onScan={handleScan}
             onPresetScan={handlePresetScan}
             loading={loading}
+            aiStatus={aiStatus}
           />
         </div>
 

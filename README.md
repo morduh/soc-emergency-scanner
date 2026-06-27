@@ -63,11 +63,20 @@ The scanner is 100% offline. No internet needed once deployed. It auto-detects t
 
 | Stage | What Happens |
 |---|---|
-| **File Walk** | Scans the target directory for suspicious files |
+| **Live Artifact Collection** | Native Windows commands extract active Network Connections, Scheduled Tasks, Shortcuts, and PowerShell Event Logs. |
+| **File Walk & Registry** | Scans 8 high-value directories (Bank Lab Preset) and audits HKCU/HKLM Run keys. |
 | **Scoring** | Scores each file: SHA-256 database match (+100), unsigned binary (+50), name masquerading (+50) |
-| **Top-10** | Top 10 most suspicious files extracted for AI review |
-| **AI Analysis** | Local Qwen2.5 model analyzes the files — no internet, fully offline |
-| **Report** | Structured incident report: risk level, attack story, timeline, recommendations |
+| **AI Analysis** | Local Qwen2.5 model analyzes the aggregated forensic artifacts and raw scripts — no internet, fully offline. |
+| **Report Extraction** | The AI extracts exact raw evidence (scripts, IPs, etc.) and presents a structured incident timeline. |
+
+---
+
+## ✨ Advanced Features
+
+- **Automated "Bank Lab" Preset**: A single-click macro that instantly traverses the 8 most critical system locations for stealthy malware.
+- **Click-to-Open Forensics**: Click the "Open" button next to any suspicious file in the UI to instantly open Windows File Explorer and highlight the file without safely executing it. Registry paths will automatically open `regedit` to the exact key.
+- **Live System Telemetry**: Instead of just scanning dormant files, the scanner actively hunts for reverse shells (`netstat`), suspicious persistence (`schtasks`), and memory injection keywords via PowerShell Event Logs (`Get-WinEvent`).
+- **UI Safety Locks**: The interface is hard-locked until the offline AI engine completes its background initialization and model loading.
 
 ---
 

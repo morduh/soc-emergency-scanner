@@ -208,14 +208,20 @@ CRITICAL INSTRUCTIONS:
 4. The risk_level field must be EXACTLY one of: "HIGH", "MEDIUM", or "LOW" — in English, uppercase.
 5. The timeline array should represent a logical reconstruction of the attack sequence, ordered chronologically.
 6. If the data appears clean or benign, set risk_level to "LOW" and explain why in English.
-7. IMPORTANT: Limit the 'timeline' array to a maximum of the top 4-5 most critical or suspicious events only. Do NOT log every file. Avoid output bloat — this is essential for performance on CPU hardware.
+7. IMPORTANT: Include ALL relevant suspicious events in the timeline. Do not artificially limit the timeline to 4-5 events. The user needs to see the full scope of the attack.
+8. IMPORTANT: You MUST act as a forensic data extractor. Do NOT paraphrase, summarize, or describe the evidence. You MUST copy-paste the EXACT raw PowerShell scripts, the exact commands, the exact IP addresses, and the exact scheduled task parameters directly into your event descriptions in the "proof" field.
 
 Return ONLY this exact JSON structure:
 {
   "risk_level": "HIGH" | "MEDIUM" | "LOW",
   "summary": "Comprehensive English summary of investigation findings and the attack story",
   "timeline": [
-    {"time": "HH:MM", "event": "English description of the event", "type": "file" | "network" | "persistence"}
+    {
+      "time": "HH:MM", 
+      "event": "Detailed English explanation of the attacker's action and its impact.", 
+      "proof": "EXACT raw script snippet, command line, or registry value extracted from the logs.",
+      "type": "file" | "network" | "persistence"
+    }
   ],
   "recommendation": "Clear English mitigation steps and recommended actions for the SOC team"
 }"""
@@ -660,6 +666,11 @@ class CyberAPI:
                 justifications.append(
                     "Unsigned binary — lacks a valid Authenticode digital signature (+50 points)"
                 )
+                if basename.startswith("windows") or basename.startswith("microsoft"):
+                    score += 50
+                    justifications.append(
+                        "Critical: Unsigned binary attempting to spoof Microsoft/Windows naming conventions (+50 points)"
+                    )
 
         # ── Rule C: Filename Masquerading Detection ──────────────────────────
         # Attackers commonly drop malware using the exact names of critical
@@ -833,6 +844,79 @@ class CyberAPI:
                 pass
 
         return registry_hits
+
+    def _collect_active_connections(self) -> str:
+        """Run netstat -ano to collect active network connections."""
+        try:
+            result = subprocess.run(['netstat', '-ano'], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=10)
+            return f"--- ACTIVE NETWORK CONNECTIONS ---\n{result.stdout[:2000]}\n"
+        except Exception as e:
+            return f"--- ACTIVE NETWORK CONNECTIONS ---\n[ERROR] Failed to collect: {e}\n"
+
+    def _collect_scheduled_tasks(self) -> str:
+        """Run schtasks to find scheduled tasks."""
+        try:
+            result = subprocess.run(['schtasks', '/query', '/fo', 'LIST', '/v'], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=15)
+            lines = result.stdout.splitlines()
+            suspicious_tasks = []
+            current_task = []
+            is_suspicious = False
+            for line in lines:
+                if line.startswith("HostName:"):
+                    if is_suspicious:
+                        suspicious_tasks.extend(current_task)
+                        suspicious_tasks.append("")
+                    current_task = [line]
+                    is_suspicious = False
+                else:
+                    current_task.append(line)
+                    line_lower = line.lower()
+                    if "downloads" in line_lower or "temp" in line_lower or "appdata" in line_lower:
+                        is_suspicious = True
+            
+            if is_suspicious:
+                suspicious_tasks.extend(current_task)
+            
+            if suspicious_tasks:
+                return f"--- SUSPICIOUS SCHEDULED TASKS ---\n" + "\n".join(suspicious_tasks)[:2000] + "\n"
+            return "--- SUSPICIOUS SCHEDULED TASKS ---\n[INFO] No tasks found running from Downloads/Temp/AppData.\n"
+        except Exception as e:
+            return f"--- SUSPICIOUS SCHEDULED TASKS ---\n[ERROR] Failed to collect: {e}\n"
+
+    def _scan_browser_shortcuts(self) -> str:
+        """Scan Desktop and Taskbar for .lnk shortcuts with malicious arguments."""
+        try:
+            ps_cmd = (
+                "$s=New-Object -COM WScript.Shell;"
+                "$paths = @($env:USERPROFILE+'\\Desktop', $env:USERPROFILE+'\\AppData\\Roaming\\Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar');"
+                "Get-ChildItem -Path $paths -Filter *.lnk -ErrorAction SilentlyContinue | ForEach-Object {"
+                "  $l=$s.CreateShortcut($_.FullName);"
+                "  if ($l.TargetPath -match '\\.exe$') {"
+                "    $_.FullName + ' -> Target: ' + $l.TargetPath + ' | Args: ' + $l.Arguments;"
+                "  }"
+                "}"
+            )
+            result = subprocess.run(['powershell', '-NoProfile', '-Command', ps_cmd], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=15)
+            if result.stdout.strip():
+                return f"--- BROWSER SHORTCUTS (.LNK) ---\n{result.stdout.strip()[:2000]}\n"
+            return "--- BROWSER SHORTCUTS (.LNK) ---\n[INFO] No suspicious shortcuts detected.\n"
+        except Exception as e:
+            return f"--- BROWSER SHORTCUTS (.LNK) ---\n[ERROR] Failed to collect: {e}\n"
+
+    def _query_powershell_logs(self) -> str:
+        """Query Event ID 4103/4104 for PowerShell memory injection keywords."""
+        try:
+            ps_cmd = (
+                "Get-WinEvent -FilterHashtable @{LogName='Windows PowerShell','Microsoft-Windows-PowerShell/Operational'; ID=4103,4104} "
+                "-MaxEvents 50 -ErrorAction SilentlyContinue | Where-Object { $_.Message -match 'Add-Type|System\\.Net' } | "
+                "Select-Object TimeCreated, Id, Message | Format-List"
+            )
+            result = subprocess.run(['powershell', '-NoProfile', '-Command', ps_cmd], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=20)
+            if result.stdout.strip():
+                return f"--- POWERSHELL EVENT LOGS (4103/4104) ---\n{result.stdout.strip()[:2000]}\n"
+            return "--- POWERSHELL EVENT LOGS (4103/4104) ---\n[INFO] No suspicious PowerShell events found.\n"
+        except Exception as e:
+            return f"--- POWERSHELL EVENT LOGS (4103/4104) ---\n[ERROR] Failed to collect: {e}\n"
 
     def run_bank_lab_preset(self) -> str:
         """
@@ -1044,6 +1128,11 @@ class CyberAPI:
                     "sha256": sha256_val,
                 })
 
+        aggregate_lines.append(self._collect_active_connections())
+        aggregate_lines.append(self._collect_scheduled_tasks())
+        aggregate_lines.append(self._scan_browser_shortcuts())
+        aggregate_lines.append(self._query_powershell_logs())
+
         raw_data = "\n".join(aggregate_lines)
         _report_progress("AI_THINKING", 65, "")
         ai_result = self._analyze_with_local_ai(raw_data)
@@ -1253,6 +1342,11 @@ class CyberAPI:
                 "sha256": sha256_val,
             })
 
+        aggregate_lines.append(self._collect_active_connections())
+        aggregate_lines.append(self._collect_scheduled_tasks())
+        aggregate_lines.append(self._scan_browser_shortcuts())
+        aggregate_lines.append(self._query_powershell_logs())
+
         raw_data = "\n".join(aggregate_lines)
 
         # --- Stage 3: AI Analysis ---
@@ -1350,8 +1444,11 @@ class CyberAPI:
             for i, event in enumerate(timeline, start=1):
                 t    = event.get("time", "??:??")
                 evt  = event.get("event", "")
+                prf  = event.get("proof", "")
                 etype = event.get("type", "file").upper()
                 lines.append(f"  [{i:02d}] {t}  [{etype}]  {evt}")
+                if prf:
+                    lines.append(f"       -> PROOF: {prf}")
 
             lines += [
                 "",
@@ -1455,12 +1552,16 @@ class CyberAPI:
         llama-server, so the model receives correctly formatted instructions
         and produces structured JSON output instead of echoing the input.
         """
+        # Enforce context size limit (roughly 35,000 characters) to prevent llama-server 400 errors
+        if len(raw_data) > 35000:
+            raw_data = raw_data[:35000] + "\n\n[WARNING: DATA TRUNCATED DUE TO CONTEXT SIZE LIMIT]"
+
         payload = {
             "messages": [
                 {"role": "system", "content": SYSTEM_PROMPT + "\n[ignoring loop detection]"},
                 {"role": "user",   "content": f"Analyze the following data and return ONLY the JSON object:\n\n{raw_data}"},
             ],
-            "max_tokens": 512,      # Trimmed for slow CPU machines (~8 tok/s VMs)
+            "max_tokens": 2048,      # Increased to allow detailed timeline extraction without truncation
             "temperature": 0.2,
             "repeat_penalty": 1.15, # Penalise repeated tokens — prevents llama.cpp loop detection from triggering
             "frequency_penalty": 0.1,
@@ -1472,7 +1573,7 @@ class CyberAPI:
             response = requests.post(
                 AI_SERVER_URL,
                 json=payload,
-                timeout=600,  # 10 min — handles slow VM inference (~8 tok/s)
+                timeout=1200,  # 20 min — increased for detailed timeline generation on slow VMs
             )
             response.raise_for_status()
             data = response.json()
@@ -1604,6 +1705,39 @@ class CyberAPI:
             "model_found": os.path.isfile(MODEL_PATH),
             "platform": sys.platform,
         })
+
+    # ------------------------------------------------------------------
+    # Public: Open file location safely without executing
+    # ------------------------------------------------------------------
+
+    def open_file_location(self, file_path: str) -> str:
+        """
+        Open the folder containing the file using Windows Explorer and highlight the file.
+        If it's a registry key, attempt to open regedit to that key.
+        """
+        try:
+            if file_path.startswith("HKCU") or file_path.startswith("HKLM"):
+                key_path = file_path.split(" -> ")[0].strip()
+                key_path = key_path.replace("HKCU", "Computer\\HKEY_CURRENT_USER").replace("HKLM", "Computer\\HKEY_LOCAL_MACHINE")
+                import winreg
+                try:
+                    with winreg.CreateKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Applets\Regedit") as key:
+                        winreg.SetValueEx(key, "LastKey", 0, winreg.REG_SZ, key_path)
+                    subprocess.Popen(['regedit.exe', '-m'])
+                    return json.dumps({"status": "success", "message": "Opened Registry Editor"})
+                except Exception as e:
+                    return json.dumps({"status": "error", "message": f"Failed to open registry: {e}"})
+            else:
+                if not os.path.exists(file_path):
+                    parent_dir = os.path.dirname(file_path)
+                    if os.path.exists(parent_dir):
+                        subprocess.Popen(['explorer', parent_dir])
+                        return json.dumps({"status": "success", "message": "Opened parent directory"})
+                    return json.dumps({"status": "error", "message": "Path does not exist on disk."})
+                subprocess.Popen(['explorer', '/select,', file_path])
+                return json.dumps({"status": "success", "message": "Opened Explorer"})
+        except Exception as e:
+            return json.dumps({"status": "error", "message": str(e)})
 
 
 # ---------------------------------------------------------------------------
