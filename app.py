@@ -1156,7 +1156,7 @@ class CyberAPI:
         if config.get("downloads_desktop", True):
             aggregate_lines.append(self._scan_browser_shortcuts())
         if config.get("scheduled_tasks", True):
-            aggregate_lines.append(self._scan_scheduled_tasks())
+            aggregate_lines.append(self._collect_scheduled_tasks())
         if config.get("event_logs", True):
             aggregate_lines.append(self._query_powershell_logs())
 
