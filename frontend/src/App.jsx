@@ -99,12 +99,12 @@ function Header({ aiStatus }) {
   );
 }
 
-function ScanControl({ folderPath, setFolderPath, onScan, onPresetScan, loading, aiStatus }) {
+function ScanControl({ folderPath, setFolderPath, onScan, onPresetScan, onCacheTriageScan, loading, aiStatus }) {
   return (
     <div className="glass-card rounded-2xl border border-slate-800 p-6 space-y-6">
       
       {/* MACRO ACTION BUTTON */}
-      <div>
+      <div className="flex flex-col gap-3">
         <button
           onClick={onPresetScan}
           disabled={loading || aiStatus !== 'ready'}
@@ -113,6 +113,15 @@ function ScanControl({ folderPath, setFolderPath, onScan, onPresetScan, loading,
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
           <span className="relative z-10 text-xl">🎯</span>
           <span className="relative z-10 drop-shadow-md">RUN LAB AUTOMATED INCIDENT PRESET (DOWNLOADS, DESKTOP, CHROME CACHE, REGISTRY, TASKS, EVENT LOGS, TEMPS)</span>
+        </button>
+        <button
+          onClick={onCacheTriageScan}
+          disabled={loading || aiStatus !== 'ready'}
+          className="w-full relative px-6 py-4 rounded-xl font-black text-sm tracking-widest uppercase text-white bg-gradient-to-r from-cyan-600 to-blue-700 border-2 border-cyan-500 hover:from-cyan-500 hover:to-blue-600 focus:outline-none focus:ring-4 focus:ring-cyan-500/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 overflow-hidden group"
+        >
+          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+          <span className="relative z-10 text-xl">🔍</span>
+          <span className="relative z-10 drop-shadow-md">DEEP BROWSER CACHE TRIAGE (CHROME & EDGE ONLY)</span>
         </button>
       </div>
 
@@ -736,6 +745,57 @@ export default function App() {
     }
   };
 
+  const handleCacheTriageScan = async () => {
+    setLoading(true);
+    setError(null);
+    setScanResult(null);
+    setCurrentFile('');
+    setProgress({ phase: 'INIT', percent: 0, file: '' });
+
+    try {
+      const raw = await callPython('run_cache_triage_preset');
+      const obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
+
+      if (obj.error) {
+        setLoading(false);
+        setError(obj.error);
+        return;
+      }
+
+      // If started successfully, begin polling
+      const pollId = setInterval(async () => {
+        try {
+          const pRaw = await callPython('get_progress');
+          const prog = typeof pRaw === 'string' ? JSON.parse(pRaw) : pRaw;
+          if (prog && prog.phase) {
+            setProgress({ phase: prog.phase, percent: Math.round(prog.percent || 0), file: prog.file || '' });
+            if (prog.file) setCurrentFile(prog.file);
+
+            if (prog.phase === 'COMPLETE' || prog.phase === 'ERROR') {
+              clearInterval(pollId);
+              setLoading(false);
+              
+              let resultObj = null;
+              if (prog.result) {
+                try { resultObj = typeof prog.result === 'string' ? JSON.parse(prog.result) : prog.result; } catch (e) {}
+              }
+              
+              if (prog.phase === 'ERROR' || (resultObj && resultObj.error)) {
+                setError(resultObj ? resultObj.error : "Unknown error occurred.");
+              } else if (resultObj) {
+                setScanResult(resultObj);
+              }
+            }
+          }
+        } catch (_) {}
+      }, 600);
+
+    } catch (err) {
+      setError(`Cache triage error: ${err.message}`);
+      setLoading(false);
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleScan();
   };
@@ -755,6 +815,7 @@ export default function App() {
             setFolderPath={setFolderPath}
             onScan={handleScan}
             onPresetScan={handlePresetScan}
+            onCacheTriageScan={handleCacheTriageScan}
             loading={loading}
             aiStatus={aiStatus}
           />
