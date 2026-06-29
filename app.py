@@ -1609,7 +1609,8 @@ class CyberAPI:
             response = requests.post(
                 AI_SERVER_URL,
                 json=payload,
-                timeout=1200,  # 20 min — increased for detailed timeline generation on slow VMs
+                timeout=3600,  # 60 min — increased for extremely slow VMs
+
                 stream=True,
             )
             response.raise_for_status()
@@ -1626,8 +1627,9 @@ class CyberAPI:
                         try:
                             chunk = json.loads(data_str)
                             delta = chunk.get("choices", [{}])[0].get("delta", {})
-                            if "content" in delta:
-                                raw_text += delta["content"]
+                            content = delta.get("content")
+                            if content is not None:
+                                raw_text += content
                         except json.JSONDecodeError:
                             pass
             
