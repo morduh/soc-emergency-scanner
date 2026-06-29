@@ -1033,7 +1033,10 @@ class CyberAPI:
                                     continue
                                 score, justifications = self._score_file(full_path)
                                 entropy = self._calculate_entropy(full_path)
-                                if score > 0 or entropy > 7.5:
+                                
+                                # Prevent extensionless cache blobs (like Chrome f_00000X) from exploding the report with false positives
+                                is_extensionless = (ext == "")
+                                if score > 0 or (entropy > 7.5 and not is_extensionless):
                                     if entropy > 7.5 and not any("High entropy" in j for j in justifications):
                                         justifications.append(f"High entropy ({entropy:.2f} / 8.00) indicates potential packed or encrypted data")
                                     scored_files.append((max(1, score), justifications, full_path, True))
