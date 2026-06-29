@@ -160,29 +160,33 @@ function ScanControl({ folderPath, setFolderPath, onScan, onUnifiedScan, loading
         )}
       </div>
 
-      <div className="border-t border-slate-800/80">
+      <div className="border-t border-slate-800/80 bg-slate-900/40">
         <button
           onClick={() => setConfigOpen(o => !o)}
-          className="w-full flex items-center justify-between px-6 py-3 text-xs font-semibold tracking-widest uppercase text-slate-500
-            hover:text-slate-300 hover:bg-slate-800/30 transition-all duration-150"
+          className="w-full flex items-center justify-between px-6 py-4 text-sm font-bold tracking-widest uppercase text-slate-300
+            hover:text-white hover:bg-slate-800/60 transition-all duration-200 group"
         >
-          <span className="flex items-center gap-2">
-            <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-            </svg>
-            Advanced Scan Configuration
+          <span className="flex items-center gap-3">
+            <div className="p-1.5 rounded-md bg-slate-800 border border-slate-700 group-hover:border-slate-500 transition-colors">
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400">
+                <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+              </svg>
+            </div>
+            Configure Scan Modules
           </span>
-          <span className="flex items-center gap-2">
-            <span className="text-slate-700 font-mono normal-case tracking-normal">
-              {enabledCount} of 6 active
+          <span className="flex items-center gap-3">
+            <span className="text-slate-400 font-mono normal-case tracking-normal text-xs bg-slate-950 px-2 py-1 rounded border border-slate-800">
+              {enabledCount} / 6 active
             </span>
-            <svg
-              width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
-              strokeLinecap="round" strokeLinejoin="round"
-              className={`transition-transform duration-200 ${configOpen ? 'rotate-180' : ''}`}
-            >
-              <path d="m6 9 6 6 6-6"/>
-            </svg>
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 group-hover:bg-slate-700 transition-colors">
+              <svg
+                width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
+                strokeLinecap="round" strokeLinejoin="round"
+                className={`transition-transform duration-300 text-slate-400 group-hover:text-white ${configOpen ? 'rotate-180' : ''}`}
+              >
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </div>
           </span>
         </button>
 
@@ -266,11 +270,11 @@ function ScanControl({ folderPath, setFolderPath, onScan, onUnifiedScan, loading
             onClick={onScan}
             disabled={loading || !folderPath.trim() || aiStatus !== 'ready'}
             className="relative px-5 py-3 rounded-xl font-bold text-sm tracking-widest uppercase text-white
-              bg-red-700 border border-red-600
-              hover:bg-red-600 hover:border-red-500
-              focus:outline-none focus:ring-2 focus:ring-red-500
+              bg-gradient-to-r from-slate-700 to-slate-600 border border-slate-500
+              hover:from-slate-600 hover:to-slate-500 hover:border-slate-400
+              focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-950
               disabled:opacity-30 disabled:cursor-not-allowed
-              transition-all duration-200 shadow-lg shadow-red-950/50
+              transition-all duration-200 shadow-[0_4px_24px_rgba(0,0,0,0.5)]
               active:scale-95 flex items-center gap-2"
           >
             <Icons.Scan />
