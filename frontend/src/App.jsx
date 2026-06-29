@@ -108,77 +108,145 @@ function ScanControl({ folderPath, setFolderPath, onScan, onUnifiedScan, loading
     scheduled_tasks: true,
     event_logs: true
   });
+  const [configOpen, setConfigOpen] = useState(false);
 
   const configOptions = [
-    { key: 'downloads_desktop', label: 'Downloads & Desktop' },
-    { key: 'temp_folders', label: 'Temp Folders' },
-    { key: 'browser_cache', label: 'Browser Cache (Chrome, Edge, Firefox, Brave, Opera)' },
-    { key: 'registry', label: 'Registry (Persistence Keys)' },
-    { key: 'scheduled_tasks', label: 'Scheduled Tasks' },
-    { key: 'event_logs', label: 'Event Logs (PowerShell)' }
+    { key: 'downloads_desktop', label: 'Downloads & Desktop',                    icon: '📁' },
+    { key: 'temp_folders',      label: 'Temp Folders',                           icon: '🗂️' },
+    { key: 'browser_cache',     label: 'Browser Cache (Chrome, Edge, Firefox…)', icon: '🌐' },
+    { key: 'registry',          label: 'Registry — Persistence Keys',            icon: '🔑' },
+    { key: 'scheduled_tasks',   label: 'Scheduled Tasks',                        icon: '⏱️' },
+    { key: 'event_logs',        label: 'Event Logs (PowerShell)',                 icon: '📋' },
   ];
 
-  return (
-    <div className="glass-card rounded-2xl border border-slate-800 p-6 space-y-6">
-      
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Icons.Shield />
-          <h2 className="text-sm font-bold tracking-widest text-slate-300 uppercase">Unified Scan Configuration</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {configOptions.map(({ key, label }) => (
-            <label
-              key={key}
-              className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                scanConfig[key]
-                  ? 'bg-purple-900/20 border-purple-500/50 hover:bg-purple-900/30'
-                  : 'bg-slate-900/50 border-slate-800 hover:bg-slate-800/80 text-slate-400'
-              }`}
-            >
-              <input 
-                type="checkbox"
-                className="hidden"
-                checked={scanConfig[key]}
-                onChange={() => setScanConfig(prev => ({ ...prev, [key]: !prev[key] }))}
-              />
-              <div className={`flex items-center justify-center w-5 h-5 rounded border ${
-                scanConfig[key] ? 'bg-purple-500 border-purple-500 text-white' : 'bg-slate-950 border-slate-700'
-              }`}>
-                {scanConfig[key] && <Icons.Check size={14} />}
-              </div>
-              <span className="text-sm font-semibold tracking-wide">{label}</span>
-            </label>
-          ))}
-        </div>
+  const enabledCount = Object.values(scanConfig).filter(Boolean).length;
 
+  return (
+    <div className="glass-card rounded-2xl border border-slate-800/80 overflow-hidden">
+
+      <div className="p-6">
         <button
+          id="default-scan-btn"
           onClick={() => onUnifiedScan(scanConfig)}
           disabled={loading || aiStatus !== 'ready'}
-          className="mt-2 w-full relative px-6 py-4 rounded-xl font-black text-sm tracking-widest uppercase text-white bg-gradient-to-r from-purple-600 to-indigo-700 border-2 border-purple-500 hover:from-purple-500 hover:to-indigo-600 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 overflow-hidden group"
+          className="w-full relative flex items-center justify-center gap-3 px-8 py-5 rounded-xl font-black text-base tracking-[0.15em] uppercase text-white
+            bg-gradient-to-r from-slate-700 to-slate-600
+            border border-slate-500
+            hover:from-slate-600 hover:to-slate-500 hover:border-slate-400
+            focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-950
+            disabled:opacity-30 disabled:cursor-not-allowed
+            transition-all duration-200
+            shadow-[0_4px_24px_rgba(0,0,0,0.5)]
+            hover:shadow-[0_4px_32px_rgba(148,163,184,0.12)]
+            active:scale-[0.99] group overflow-hidden"
         >
-          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-          <span className="relative z-10 text-xl">🎯</span>
-          <span className="relative z-10 drop-shadow-md">DEFAULT SCAN (DYNAMIC LAB PRESET)</span>
+          <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-slate-300 flex-shrink-0">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/>
+          </svg>
+          <span className="relative z-10">
+            {loading ? 'SCAN IN PROGRESS…' : 'INITIATE DEFAULT SCAN'}
+          </span>
+          {!loading && (
+            <span className="relative z-10 ml-1 px-2 py-0.5 rounded text-xs font-bold bg-slate-900/60 text-slate-400 border border-slate-700 tracking-normal normal-case">
+              {enabledCount}/6 modules
+            </span>
+          )}
         </button>
+
+        {aiStatus !== 'ready' && (
+          <p className="mt-2 text-center text-xs text-amber-500/80 font-mono tracking-wide">
+            Waiting for AI engine to come online…
+          </p>
+        )}
       </div>
 
-      <div className="relative flex items-center py-2">
-        <div className="flex-grow border-t border-slate-700"></div>
-        <span className="flex-shrink-0 mx-4 text-xs font-bold tracking-widest text-slate-500 uppercase">OR MANUAL TARGET</span>
-        <div className="flex-grow border-t border-slate-700"></div>
-      </div>
+      <div className="border-t border-slate-800/80">
+        <button
+          onClick={() => setConfigOpen(o => !o)}
+          className="w-full flex items-center justify-between px-6 py-3 text-xs font-semibold tracking-widest uppercase text-slate-500
+            hover:text-slate-300 hover:bg-slate-800/30 transition-all duration-150"
+        >
+          <span className="flex items-center gap-2">
+            <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+            Advanced Scan Configuration
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="text-slate-700 font-mono normal-case tracking-normal">
+              {enabledCount} of 6 active
+            </span>
+            <svg
+              width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
+              strokeLinecap="round" strokeLinejoin="round"
+              className={`transition-transform duration-200 ${configOpen ? 'rotate-180' : ''}`}
+            >
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </span>
+        </button>
 
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Icons.Scan />
-          <h2 className="text-sm font-bold tracking-widest text-slate-300 uppercase">Emergency Scan Target</h2>
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${configOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="px-6 pb-4 pt-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {configOptions.map(({ key, label, icon }) => {
+              const active = scanConfig[key];
+              return (
+                <label
+                  key={key}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer select-none transition-all duration-150 group/item ${
+                    active
+                      ? 'bg-slate-800/60 border-slate-600 text-slate-200'
+                      : 'bg-slate-900/40 border-slate-800 text-slate-500 hover:border-slate-700'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="hidden"
+                    checked={active}
+                    onChange={() => setScanConfig(prev => ({ ...prev, [key]: !prev[key] }))}
+                  />
+                  <div className={`flex-shrink-0 w-4 h-4 rounded flex items-center justify-center border transition-all ${
+                    active ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-slate-600 group-hover/item:border-slate-500'
+                  }`}>
+                    {active && (
+                      <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium tracking-wide leading-tight">
+                    <span className="mr-1">{icon}</span>{label}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-3 px-6 pb-4">
+            <button
+              onClick={() => setScanConfig(Object.fromEntries(configOptions.map(o => [o.key, true])))}
+              className="text-xs text-cyan-600 hover:text-cyan-400 transition-colors font-mono tracking-wide"
+            >
+              Enable All
+            </button>
+            <span className="text-slate-700">·</span>
+            <button
+              onClick={() => setScanConfig(Object.fromEntries(configOptions.map(o => [o.key, false])))}
+              className="text-xs text-slate-600 hover:text-slate-400 transition-colors font-mono tracking-wide"
+            >
+              Disable All
+            </button>
+          </div>
         </div>
+      </div>
 
+      <div className="border-t border-slate-800/80 px-6 py-3">
+        <span className="text-xs font-bold tracking-widest text-slate-700 uppercase">Or scan a custom path</span>
+      </div>
+
+      <div className="px-6 pb-6">
         <div className="flex gap-3">
           <div className="relative flex-1">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600">
               <Icons.Folder />
             </div>
             <input
@@ -188,17 +256,25 @@ function ScanControl({ folderPath, setFolderPath, onScan, onUnifiedScan, loading
               onChange={(e) => setFolderPath(e.target.value)}
               placeholder="C:\Users\Suspect\AppData  — or drag & drop a path here"
               disabled={loading}
-              className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder-slate-600 font-mono focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all disabled:opacity-50"
+              className="w-full pl-10 pr-4 py-3 bg-slate-900/80 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-700 font-mono
+                focus:outline-none focus:ring-1 focus:ring-slate-500 focus:border-slate-600
+                transition-all disabled:opacity-40"
             />
           </div>
           <button
             id="start-scan-btn"
             onClick={onScan}
             disabled={loading || !folderPath.trim() || aiStatus !== 'ready'}
-            className="relative px-6 py-3 rounded-xl font-bold text-sm tracking-widest uppercase text-white bg-gradient-to-r from-red-600 to-red-700 border border-red-500 hover:from-red-500 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-red-900/50 hover:shadow-red-700/60 hover:scale-105 active:scale-95 flex items-center gap-2"
+            className="relative px-5 py-3 rounded-xl font-bold text-sm tracking-widest uppercase text-white
+              bg-red-700 border border-red-600
+              hover:bg-red-600 hover:border-red-500
+              focus:outline-none focus:ring-2 focus:ring-red-500
+              disabled:opacity-30 disabled:cursor-not-allowed
+              transition-all duration-200 shadow-lg shadow-red-950/50
+              active:scale-95 flex items-center gap-2"
           >
             <Icons.Scan />
-            {loading ? 'SCANNING...' : 'START EMERGENCY SCAN'}
+            {loading ? 'SCANNING…' : 'SCAN PATH'}
           </button>
         </div>
       </div>
