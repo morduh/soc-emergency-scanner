@@ -803,7 +803,7 @@ class CyberAPI:
 
             # Binary fallback: return hex snippet
             with open(file_path, "rb") as fh:
-                raw = fh.read(2048)
+                raw = fh.read(256)
             return f"[BINARY FILE — HEX SNIPPET]\n{raw.hex()}"
         except (OSError, PermissionError) as exc:
             return f"[READ ERROR: {exc}]"
@@ -1598,9 +1598,9 @@ class CyberAPI:
         llama-server, so the model receives correctly formatted instructions
         and produces structured JSON output instead of echoing the input.
         """
-        # Enforce context size limit (roughly 35,000 characters) to prevent llama-server 400 errors
-        if len(raw_data) > 35000:
-            raw_data = raw_data[:35000] + "\n\n[WARNING: DATA TRUNCATED DUE TO CONTEXT SIZE LIMIT]"
+        # Enforce context size limit (roughly 20,000 characters) to prevent llama-server 400 errors (especially from hex dumps)
+        if len(raw_data) > 20000:
+            raw_data = raw_data[:20000] + "\n\n[WARNING: DATA TRUNCATED DUE TO CONTEXT SIZE LIMIT]"
 
         payload = {
             "messages": [
