@@ -53,6 +53,7 @@ The scanner runs through four sequential stages every time you initiate a scan:
 - **Click-to-Open Forensics** — Click any result to instantly highlight the file in Windows Explorer, or navigate directly to a suspicious registry key in `regedit` — without executing anything
 - **Live System Telemetry** — Actively hunts for reverse shells (via `netstat`), suspicious persistence mechanisms, and PowerShell memory injection patterns
 - **AI-Generated Evidence Blocks** — The AI extracts exact raw scripts, IP addresses, and command-line parameters directly from the logs into the report proof blocks
+- **Smart False-Positive Reduction** — Intelligently bypasses entropy checks for benign compressed browser cache files, drastically reducing alert fatigue and AI context overflow
 - **Auto-Save Reports** — Every scan automatically saves a timestamped `.txt` forensic report to the USB `reports/` folder
 
 ---
@@ -259,6 +260,12 @@ npm install   (run inside the frontend/ folder)
 ├── reports/               ← Scan reports saved here
 └── docs/images/           ← README screenshots
 ```
+
+---
+
+## Testing & Validation
+
+This tool was extensively tested across multiple Windows virtual machines under both clean and infected conditions. Test scenarios included machines with no malware present (to verify low false-positive rates), machines infected with various malware samples (to validate detection and AI analysis accuracy), and edge cases such as systems with large browser caches, heavily used temp directories, and custom-built persistence mechanisms. The scanner consistently produced accurate risk assessments and actionable forensic timelines across all tested environments.
 
 ---
 
