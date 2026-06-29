@@ -1004,7 +1004,8 @@ class CyberAPI:
                             "windows", "program files", "program files (x86)",
                             ".git", "node_modules", "__pycache__",
                             "logs", "log", "crashreports", "crashpad",
-                            "ebwebview", "shadercache", "pkimetadata", "subresource filter"
+                            "ebwebview", "shadercache", "pkimetadata", "subresource filter",
+                            "httpcache"
                         }
                         and not d.startswith("_MEI")
                     ]
