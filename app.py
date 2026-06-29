@@ -992,11 +992,10 @@ class CyberAPI:
                         if d.lower() not in {
                             "windows", "program files", "program files (x86)",
                             ".git", "node_modules", "__pycache__",
-                            "cache", "caches", "logs", "log",
+                            "logs", "log",
                             "crashreports", "crashpad",
                             "ebwebview",   # PyWebView's WebView2 temp data dir
                             "shadercache", "pkimetadata", "subresource filter",
-                            "cache_data", "code cache", "default", "profile 1",
                         }
                         and not d.startswith("_MEI")   # PyInstaller temp bundles
                     ]
@@ -1019,6 +1018,15 @@ class CyberAPI:
                             if os.path.getsize(full_path) > 50 * 1024 * 1024:
                                 skipped += 1
                                 continue
+
+                            # ── Smart Cache Filter ──────────────────────────────────────
+                            # Filter noisy/benign cache files to prevent context bloat and crashing
+                            _root_lower = root.lower()
+                            if "cache" in _root_lower or "default" in _root_lower or "profile" in _root_lower:
+                                _ext = os.path.splitext(filename)[1].lower()
+                                if not _ext or _ext in {".tmp", ".m4s", ".ts", ".ldb", ".log", ".txt", ".bin", ".index", ".lock", ".sqlite", ".db"}:
+                                    skipped += 1
+                                    continue
 
                             print(f"[SCANNING PRESET] {full_path}")
 
@@ -1232,11 +1240,10 @@ class CyberAPI:
                     if d.lower() not in {
                         "windows", "program files", "program files (x86)",
                         ".git", "node_modules", "__pycache__",
-                        "cache", "caches", "logs", "log",
+                        "logs", "log",
                         "crashreports", "crashpad",
                         "ebwebview",   # PyWebView's WebView2 temp data dir
                         "shadercache", "pkimetadata", "subresource filter",
-                        "cache_data", "code cache", "default", "profile 1",
                     }
                     and not d.startswith("_MEI")   # PyInstaller temp bundles
                 ]
@@ -1252,6 +1259,15 @@ class CyberAPI:
                         if os.path.getsize(full_path) > 50 * 1024 * 1024:
                             skipped += 1
                             continue
+
+                        # ── Smart Cache Filter ──────────────────────────────────────
+                        # Filter noisy/benign cache files to prevent context bloat and crashing
+                        _root_lower = root.lower()
+                        if "cache" in _root_lower or "default" in _root_lower or "profile" in _root_lower:
+                            _ext = os.path.splitext(filename)[1].lower()
+                            if not _ext or _ext in {".tmp", ".m4s", ".ts", ".ldb", ".log", ".txt", ".bin", ".index", ".lock", ".sqlite", ".db"}:
+                                skipped += 1
+                                continue
 
                         # Always print every file to CMD console for full audit trail
                         print(f"[SCANNING] {full_path}")
