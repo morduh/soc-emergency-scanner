@@ -1627,7 +1627,6 @@ class CyberAPI:
             response.raise_for_status()
             
             raw_text = ""
-            import json
             for line in response.iter_lines():
                 if line:
                     decoded_line = line.decode('utf-8')
