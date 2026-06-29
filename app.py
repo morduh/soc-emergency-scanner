@@ -1032,22 +1032,29 @@ class CyberAPI:
                                     skipped += 1
                                     continue
                                 score, justifications = self._score_file(full_path)
-                                entropy = self._calculate_entropy(full_path)
                                 
-                                # Prevent extensionless cache blobs (like Chrome f_00000X) from exploding the report with false positives
-                                is_extensionless = (ext == "")
-                                if score > 0 or (entropy > 7.5 and not is_extensionless):
-                                    if entropy > 7.5 and not any("High entropy" in j for j in justifications):
-                                        justifications.append(f"High entropy ({entropy:.2f} / 8.00) indicates potential packed or encrypted data")
+                                # Completely ignore entropy for browser cache files to prevent massive false positives.
+                                suspicious_extensions = {".exe", ".dll", ".bat", ".vbs", ".ps1", ".cmd", ".scr", ".msi", ".pif"}
+                                if score > 0 or ext in suspicious_extensions:
+                                    if ext in suspicious_extensions and score == 0:
+                                        justifications.append(f"Suspicious executable extension ({ext}) found hiding in browser cache")
+                                        score = 50
                                     scored_files.append((max(1, score), justifications, full_path, True))
                             else:
                                 if is_cache_dir:
                                     if not ext or ext in {".tmp", ".m4s", ".ts", ".ldb", ".log", ".txt", ".bin", ".index", ".lock", ".sqlite", ".db"}:
                                         skipped += 1
                                         continue
-                                score, justifications = self._score_file(full_path)
-                                if score > 0:
-                                    scored_files.append((score, justifications, full_path, False))
+                                    score, justifications = self._score_file(full_path)
+                                    if score > 0:
+                                        scored_files.append((score, justifications, full_path, False))
+                                else:
+                                    score, justifications = self._score_file(full_path)
+                                    entropy = self._calculate_entropy(full_path)
+                                    if score > 0 or entropy > 7.5:
+                                        if entropy > 7.5 and not any("High entropy" in j for j in justifications):
+                                            justifications.append(f"High entropy ({entropy:.2f} / 8.00) indicates potential packed or encrypted data")
+                                        scored_files.append((max(1, score), justifications, full_path, False))
                                     
                             if files_processed % 5 == 0:
                                 progress_pct = min(60, 5 + files_processed // 5)
