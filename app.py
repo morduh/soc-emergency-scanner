@@ -1602,6 +1602,7 @@ class CyberAPI:
             "frequency_penalty": 0.1,
             "presence_penalty": 0.1,
             "stop": ["```", "\n\n\n"],
+            "stream": True,
         }
 
         try:
@@ -1609,17 +1610,28 @@ class CyberAPI:
                 AI_SERVER_URL,
                 json=payload,
                 timeout=1200,  # 20 min — increased for detailed timeline generation on slow VMs
+                stream=True,
             )
             response.raise_for_status()
-            data = response.json()
-
-            # /v1/chat/completions returns text under choices[0].message.content
-            raw_text = (
-                data.get("choices", [{}])[0]
-                    .get("message", {})
-                    .get("content", "")
-                    .strip()
-            )
+            
+            raw_text = ""
+            import json
+            for line in response.iter_lines():
+                if line:
+                    decoded_line = line.decode('utf-8')
+                    if decoded_line.startswith("data: "):
+                        data_str = decoded_line[6:]
+                        if data_str.strip() == "[DONE]":
+                            break
+                        try:
+                            chunk = json.loads(data_str)
+                            delta = chunk.get("choices", [{}])[0].get("delta", {})
+                            if "content" in delta:
+                                raw_text += delta["content"]
+                        except json.JSONDecodeError:
+                            pass
+            
+            raw_text = raw_text.strip()
 
             # ── DEBUG: print raw AI response to terminal for auditing ──────────
             print("\n=================== RAW AI RESPONSE ===================")
