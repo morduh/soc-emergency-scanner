@@ -919,13 +919,14 @@ class CyberAPI:
         except Exception as e:
             return f"--- POWERSHELL EVENT LOGS (4103/4104) ---\n[ERROR] Failed to collect: {e}\n"
 
-    def run_bank_lab_preset(self) -> str:
+    def run_unified_scan(self, config_str: str) -> str:
         """
-        Kicks off the preset scan in a background thread so it doesn't block the PyWebView JS bridge.
+        Kicks off the unified preset scan in a background thread.
         """
+        config = json.loads(config_str) if isinstance(config_str, str) else config_str
         def worker():
             try:
-                res = self._do_run_bank_lab_preset()
+                res = self._do_run_unified_scan(config)
                 _progress_state["result"] = res
                 _progress_state["percent"] = 100
                 _progress_state["phase"] = "COMPLETE"
@@ -937,33 +938,49 @@ class CyberAPI:
         threading.Thread(target=worker, daemon=True).start()
         return json.dumps({"status": "started"}, ensure_ascii=False)
 
-    def _do_run_bank_lab_preset(self) -> str:
+    def _do_run_unified_scan(self, config: dict) -> str:
         """
-        Execute a comprehensive recursive directory traversal across 8 high-value forensic lab locations
-        and run registry persistence auditing.
+        Execute a dynamic recursive directory traversal based on the provided configuration.
         """
-        targets = [
-            os.path.expandvars(r"%USERPROFILE%\Downloads"),
-            os.path.expandvars(r"%USERPROFILE%\Desktop"),
-            os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache"),
-            r"C:\Windows\System32\Tasks",
-            r"C:\Windows\System32\Winevt\Logs",
-            os.path.expandvars(r"%USERPROFILE%\AppData\Local\Temp"),
-            r"C:\Windows\Temp",
-            os.path.expandvars(r"%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"),
-        ]
+        targets = []
+        if config.get("downloads_desktop", True):
+            targets.extend([
+                os.path.expandvars(r"%USERPROFILE%\Downloads"),
+                os.path.expandvars(r"%USERPROFILE%\Desktop"),
+            ])
+        if config.get("temp_folders", True):
+            targets.extend([
+                os.path.expandvars(r"%USERPROFILE%\AppData\Local\Temp"),
+                r"C:\Windows\Temp",
+            ])
+        if config.get("browser_cache", True):
+            targets.extend([
+                os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache"),
+                os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Cache"),
+                os.path.expandvars(r"%LOCALAPPDATA%\Mozilla\Firefox\Profiles"),
+                os.path.expandvars(r"%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data\Default\Cache"),
+                os.path.expandvars(r"%LOCALAPPDATA%\Opera Software\Opera Stable\Cache"),
+                os.path.expandvars(r"%LOCALAPPDATA%\Opera Software\Opera GX Stable\Cache"),
+                os.path.expandvars(r"%LOCALAPPDATA%\Vivaldi\User Data\Default\Cache"),
+            ])
+        if config.get("registry", True):
+            targets.append(os.path.expandvars(r"%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"))
+        if config.get("scheduled_tasks", True):
+            targets.append(r"C:\Windows\System32\Tasks")
+        if config.get("event_logs", True):
+            targets.append(r"C:\Windows\System32\Winevt\Logs")
 
-        scored_files: list[tuple[int, list[str], str]] = []
+        scored_files: list[tuple[int, list[str], str, bool]] = []
         skipped = 0
         total_files_found   = 0
         total_folders_found = 0
-        files_processed     = 0  # for live progress reporting
-        visited_roots: set[str] = set()  # for scanned-folders summary
+        files_processed     = 0
+        visited_roots: set[str] = set()
 
-        # Normalise EXE_DIR so we never scan the scanner's own folder
         _exe_dir_norm = os.path.normcase(os.path.normpath(EXE_DIR))
+        _report_progress("SCANNING", 5, "Starting Unified Scan...")
 
-        _report_progress("SCANNING", 5, "Starting scan of 8 high-value locations...")
+        do_browser_cache = config.get("browser_cache", True)
 
         for folder_path in targets:
             if not os.path.exists(folder_path):
@@ -972,39 +989,28 @@ class CyberAPI:
                 for root, dirs, files in os.walk(folder_path, followlinks=False):
                     total_folders_found += 1
 
-                    # ── Never scan the scanner's own directory ───────────────────
-                    # This prevents the app's own unsigned exe/DLLs from being
-                    # flagged as suspicious in the report.
                     if os.path.normcase(os.path.normpath(root)).startswith(_exe_dir_norm):
                         dirs[:] = []
                         skipped += len(files)
                         continue
 
-                    # Track the top-level folder for the scanned-folders summary
                     visited_roots.add(root)
+                    _root_lower = root.lower()
+                    is_cache_dir = "cache" in _root_lower or "default" in _root_lower or "profile" in _root_lower
 
-                    # ── Directory exclusion list ─────────────────────────────────
-                    # Skip _MEI* dirs: these are PyInstaller's own temp extraction
-                    # folders — scanning them floods the prompt with thousands of
-                    # bundled .pyd/.dll files that are not forensic artifacts.
                     dirs[:] = [
                         d for d in dirs
                         if d.lower() not in {
                             "windows", "program files", "program files (x86)",
                             ".git", "node_modules", "__pycache__",
-                            "logs", "log",
-                            "crashreports", "crashpad",
-                            "ebwebview",   # PyWebView's WebView2 temp data dir
-                            "shadercache", "pkimetadata", "subresource filter",
+                            "logs", "log", "crashreports", "crashpad",
+                            "ebwebview", "shadercache", "pkimetadata", "subresource filter"
                         }
-                        and not d.startswith("_MEI")   # PyInstaller temp bundles
+                        and not d.startswith("_MEI")
                     ]
-                    # ── Safety-net path filter ────────────────────────────────────────────
-                    # Catches _MEI* (PyInstaller) and EBWebView (PyWebView) temp dirs that
-                    # slipped through the dirs[:] pruning above.
+
                     _root_parts = root.replace("\\", "/").split("/")
-                    if any(part.startswith("_MEI") or part.lower() == "ebwebview"
-                           for part in _root_parts):
+                    if any(part.startswith("_MEI") or part.lower() == "ebwebview" for part in _root_parts):
                         skipped += len(files)
                         continue
 
@@ -1013,44 +1019,59 @@ class CyberAPI:
                         files_processed += 1
                         full_path = os.path.join(root, filename)
                         try:
-                            if os.path.islink(full_path):
-                                continue
+                            if os.path.islink(full_path): continue
                             if os.path.getsize(full_path) > 50 * 1024 * 1024:
                                 skipped += 1
                                 continue
+                            
+                            ext = os.path.splitext(filename)[1].lower()
 
-                            # ── Smart Cache Filter ──────────────────────────────────────
-                            # Filter noisy/benign cache files to prevent context bloat and crashing
-                            _root_lower = root.lower()
-                            if "cache" in _root_lower or "default" in _root_lower or "profile" in _root_lower:
-                                _ext = os.path.splitext(filename)[1].lower()
-                                if not _ext or _ext in {".tmp", ".m4s", ".ts", ".ldb", ".log", ".txt", ".bin", ".index", ".lock", ".sqlite", ".db"}:
+                            if is_cache_dir and do_browser_cache:
+                                if ext in {".m4s", ".mp4", ".webp", ".jpg", ".jpeg", ".png", ".gif", ".ico", ".woff", ".woff2", ".ttf", ".css", ".svg"}:
                                     skipped += 1
                                     continue
-
-                            print(f"[SCANNING PRESET] {full_path}")
-
-                            # Report progress every 5 files: 5% → 60%
+                                score, justifications = self._score_file(full_path)
+                                entropy = self._calculate_entropy(full_path)
+                                if score > 0 or entropy > 7.5:
+                                    if entropy > 7.5 and not any("High entropy" in j for j in justifications):
+                                        justifications.append(f"High entropy ({entropy:.2f} / 8.00) indicates potential packed or encrypted data")
+                                    scored_files.append((max(1, score), justifications, full_path, True))
+                            else:
+                                if is_cache_dir:
+                                    if not ext or ext in {".tmp", ".m4s", ".ts", ".ldb", ".log", ".txt", ".bin", ".index", ".lock", ".sqlite", ".db"}:
+                                        skipped += 1
+                                        continue
+                                score, justifications = self._score_file(full_path)
+                                if score > 0:
+                                    scored_files.append((score, justifications, full_path, False))
+                                    
                             if files_processed % 5 == 0:
                                 progress_pct = min(60, 5 + files_processed // 5)
                                 _report_progress("SCANNING", progress_pct, full_path)
 
-                            score, justifications = self._score_file(full_path)
-                            if score > 0:
-                                scored_files.append((score, justifications, full_path))
                         except OSError:
                             skipped += 1
                             continue
             except PermissionError:
                 pass
 
-        registry_hits = self._scan_registry_persistence()
-        scored_files.extend(registry_hits)
+        aggregate_lines: list[str] = []
+        aggregate_lines.append(f"=== UNIFIED SCAN REPORT — {datetime.now().isoformat()} ===")
+        aggregate_lines.append(f"Total files scanned: {total_files_found}")
+        aggregate_lines.append(f"Total folders scanned: {total_folders_found}")
 
-        if not scored_files:
+        registry_hits = []
+        if config.get("registry", True):
+            registry_hits = self._scan_registry_persistence()
+            for score, justifications, fpath in registry_hits:
+                scored_files.append((score, justifications, fpath, False))
+
+        aggregate_lines.append(f"Suspicious files/keys found: {len(scored_files)}\n")
+
+        if not scored_files and not any([config.get("scheduled_tasks", True), config.get("event_logs", True)]):
             return json.dumps({
                 "risk_level": "LOW",
-                "summary": "Bank Lab Scan complete. No suspicious files or persistence mechanisms found.",
+                "summary": "Unified scan complete. No suspicious files or artifacts found.",
                 "timeline": [],
                 "recommendation": "No immediate action required.",
                 "total_files_scanned": total_files_found,
@@ -1058,61 +1079,22 @@ class CyberAPI:
             }, ensure_ascii=False)
 
         scored_files.sort(key=lambda x: x[0], reverse=True)
-        top_suspects = scored_files[:5]   # Capped at 5 to keep AI prompt lean on slow machines
+        top_suspects = scored_files[:50]
 
-        aggregate_lines: list[str] = []
-        aggregate_lines.append(f"=== BANK LAB TRIAGE REPORT — {datetime.now().isoformat()} ===")
-        aggregate_lines.append(f"Target directories: 8 High-Value Lab Locations + Live Registry")
-        aggregate_lines.append(f"Total files scanned: {len(scored_files) + skipped}")
-        aggregate_lines.append(f"Suspicious artifacts found: {len(scored_files)}")
-        aggregate_lines.append(f"Presenting top {len(top_suspects)} suspects:\n")
+        if top_suspects:
+            aggregate_lines.append(f"Presenting top {len(top_suspects)} file/registry suspects:\n")
 
         file_meta_list = []
-        for rank, (score, justifications, fpath) in enumerate(top_suspects, start=1):
+        for rank, item in enumerate(top_suspects, start=1):
+            score, justifications, fpath, is_cache_artifact = item
+            
             if fpath.startswith("HKCU") or fpath.startswith("HKLM"):
                 ext = "[REGISTRY]"
                 size = 0
                 mtime_str = "Live Registry"
                 sha256_val = "N/A"
                 content = f"Virtual Registry Entry: {fpath}"
-            else:
-                ext   = os.path.splitext(fpath)[1].lower()
-                size  = 0
-                mtime_str = "unknown"
-                sha256_val = ""
-                try:
-                    stat_info = os.stat(fpath)
-                    size = stat_info.st_size
-                    mtime_str = datetime.fromtimestamp(stat_info.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
-                    
-                    h = hashlib.sha256()
-                    with open(fpath, "rb") as fh:
-                        for chunk in iter(lambda: fh.read(65536), b""):
-                            h.update(chunk)
-                    sha256_val = h.hexdigest().lower()
-                except OSError:
-                    pass
-                content = self._extract_text(fpath)
-
-            justification_text = "  " + "\n  ".join(
-                f"[{j+1}] {reason}" for j, reason in enumerate(justifications)
-            ) if justifications else "  [No specific rule triggered]"
-
-            block = (
-                f"--- FILE #{rank} (Suspicion Score: {score}) ---\n"
-                f"Path      : {fpath}\n"
-                f"Extension : {ext}\n"
-                f"Size      : {size} bytes\n"
-                f"Modified  : {mtime_str}\n"
-                f"SHA-256   : {sha256_val}\n"
-                f"Scoring Justification:\n{justification_text}\n"
-                f"Content Preview:\n{content}\n"
-            )
-            aggregate_lines.append(block)
-
-            if fpath.startswith("HKCU") or fpath.startswith("HKLM"):
                 name = fpath.split(" -> ")[0].split("\\")[-1]
-                path = fpath.split(" -> ")[1] if " -> " in fpath else fpath
                 file_meta_list.append({
                     "name": name,
                     "path": fpath,
@@ -1126,211 +1108,41 @@ class CyberAPI:
                     "justification": justifications
                 })
             else:
+                ext   = os.path.splitext(fpath)[1].lower()
+                size  = 0
+                mtime_str = "unknown"
+                sha256_val = ""
+                try:
+                    stat_info = os.stat(fpath)
+                    size = stat_info.st_size
+                    mtime_str = datetime.fromtimestamp(stat_info.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                    h = hashlib.sha256()
+                    with open(fpath, "rb") as fh:
+                        for chunk in iter(lambda: fh.read(65536), b""):
+                            h.update(chunk)
+                    sha256_val = h.hexdigest().lower()
+                except OSError:
+                    pass
+
+                if is_cache_artifact:
+                    content = "[CACHE FILE METADATA ONLY - NO RAW CONTENT EXTRACTED]\n"
+                    if ext in (".exe", ".dll", ".ps1", ".bat", ".cmd", ".vbs", ".js"):
+                        content = self._extract_text(fpath)
+                else:
+                    if ext in (".exe", ".dll"):
+                        content = self._triage_binary(fpath)
+                    else:
+                        content = self._extract_text(fpath)
+
                 file_meta_list.append({
-                    "rank": rank,
-                    "score": score,
-                    "path": fpath,
-                    "extension": ext,
-                    "size": size,
-                    "modified": mtime_str,
-                    "justification": justifications,
-                    "sha256": sha256_val,
+                    "rank": rank, "score": score, "path": fpath, "extension": ext,
+                    "size": size, "modified": mtime_str, "justification": justifications, "sha256": sha256_val
                 })
 
-        aggregate_lines.append(self._collect_active_connections())
-        aggregate_lines.append(self._collect_scheduled_tasks())
-        aggregate_lines.append(self._scan_browser_shortcuts())
-        aggregate_lines.append(self._query_powershell_logs())
-
-        raw_data = "\n".join(aggregate_lines)
-        _report_progress("AI_THINKING", 65, "")
-        ai_result = self._analyze_with_local_ai(raw_data)
-        _report_progress("SAVING", 92, "")
-
-        try:
-            result_obj = json.loads(ai_result)
-        except (json.JSONDecodeError, TypeError):
-            return json.dumps({
-                "error": "The AI response was not valid JSON. The model may still be warming up — please retry.",
-                "raw_response": ai_result,
-            }, ensure_ascii=False)
-
-        if "error" in result_obj:
-            print(f"[WARN] AI analysis returned an error: {result_obj['error']}")
-            return json.dumps(result_obj, ensure_ascii=False)
-
-        # Build deduplicated scanned-folders list (unique parent dirs only)
-        scanned_dirs = _deduplicate_dirs(visited_roots)
-
-        result_obj["scanned_files"]         = file_meta_list
-        result_obj["total_suspicious"]      = len(scored_files)
-        result_obj["total_files_scanned"]   = total_files_found
-        result_obj["total_folders_scanned"] = total_folders_found
-        result_obj["scanned_dirs"]          = scanned_dirs
-        scan_ts = datetime.now()
-        result_obj["scan_timestamp"] = scan_ts.isoformat()
-
-        report_path = self._save_report(result_obj, file_meta_list, scan_ts)
-        if report_path:
-            result_obj["report_file_path"] = report_path
-
-        _report_progress("COMPLETE", 100, "")
-        return json.dumps(result_obj, ensure_ascii=False)
-
-    def run_cache_triage_preset(self) -> str:
-        """
-        Kicks off the deep browser cache triage preset in a background thread.
-        """
-        def worker():
-            try:
-                res = self._do_run_cache_triage_preset()
-                _progress_state["result"] = res
-                _progress_state["percent"] = 100
-                _progress_state["phase"] = "COMPLETE"
-            except Exception as e:
-                _progress_state["result"] = json.dumps({"error": str(e)}, ensure_ascii=False)
-                _progress_state["percent"] = 100
-                _progress_state["phase"] = "ERROR"
-
-        threading.Thread(target=worker, daemon=True).start()
-        return json.dumps({"status": "started"}, ensure_ascii=False)
-
-    def _do_run_cache_triage_preset(self) -> str:
-        """
-        Execute a strict cache triage focused on Chrome and Edge default caches.
-        Applies media filtering and a strict AI gatekeeper (Score > 0 or Entropy > 7.5).
-        """
-        targets = [
-            os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache"),
-            os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Cache"),
-        ]
-
-        scored_files: list[tuple[int, list[str], str]] = []
-        skipped = 0
-        total_files_found   = 0
-        total_folders_found = 0
-        files_processed     = 0
-        visited_roots: set[str] = set()
-
-        _exe_dir_norm = os.path.normcase(os.path.normpath(EXE_DIR))
-
-        _report_progress("SCANNING", 5, "Starting Deep Cache Triage...")
-
-        for folder_path in targets:
-            if not os.path.exists(folder_path):
-                continue
-            try:
-                for root, dirs, files in os.walk(folder_path, followlinks=False):
-                    total_folders_found += 1
-
-                    if os.path.normcase(os.path.normpath(root)).startswith(_exe_dir_norm):
-                        dirs[:] = []
-                        skipped += len(files)
-                        continue
-
-                    visited_roots.add(root)
-
-                    dirs[:] = [
-                        d for d in dirs
-                        if d.lower() not in {
-                            "windows", "program files", "program files (x86)",
-                            ".git", "node_modules", "__pycache__",
-                            "ebwebview",
-                        }
-                        and not d.startswith("_MEI")
-                    ]
-
-                    _root_parts = root.replace("\\", "/").split("/")
-                    if any(part.startswith("_MEI") or part.lower() == "ebwebview"
-                           for part in _root_parts):
-                        skipped += len(files)
-                        continue
-
-                    for filename in files:
-                        total_files_found += 1
-                        files_processed += 1
-                        full_path = os.path.join(root, filename)
-                        try:
-                            if os.path.islink(full_path):
-                                continue
-                            if os.path.getsize(full_path) > 50 * 1024 * 1024:
-                                skipped += 1
-                                continue
-
-                            ext = os.path.splitext(filename)[1].lower()
-                            # ── Intelligent Media Filtering ───────────────────
-                            if ext in {".m4s", ".mp4", ".webp", ".jpg", ".jpeg", ".png", ".gif", ".ico", ".woff", ".woff2", ".ttf", ".css", ".svg"}:
-                                skipped += 1
-                                continue
-
-                            if files_processed % 5 == 0:
-                                progress_pct = min(60, 5 + files_processed // 5)
-                                _report_progress("SCANNING", progress_pct, full_path)
-
-                            # ── Strict AI Gatekeeper ──────────────────────────
-                            score, justifications = self._score_file(full_path)
-                            entropy = self._calculate_entropy(full_path)
-                            
-                            if score > 0 or entropy > 7.5:
-                                if entropy > 7.5 and not any("High entropy" in j for j in justifications):
-                                    justifications.append(f"High entropy ({entropy:.2f} / 8.00) indicates potential packed or encrypted data")
-                                scored_files.append((max(1, score), justifications, full_path))
-                        except OSError:
-                            skipped += 1
-                            continue
-            except PermissionError:
-                pass
-
-        if not scored_files:
-            return json.dumps({
-                "risk_level": "LOW",
-                "summary": "Deep Cache Triage complete. No suspicious files or high-entropy data found.",
-                "timeline": [],
-                "recommendation": "No immediate action required.",
-                "total_files_scanned": total_files_found,
-                "total_folders_scanned": total_folders_found,
-            }, ensure_ascii=False)
-
-        scored_files.sort(key=lambda x: x[0], reverse=True)
-        top_suspects = scored_files[:10]
-
-        aggregate_lines: list[str] = []
-        aggregate_lines.append(f"=== DEEP BROWSER CACHE TRIAGE REPORT — {datetime.now().isoformat()} ===")
-        aggregate_lines.append(f"Target directories: Chrome/Edge Caches")
-        aggregate_lines.append(f"Total files scanned: {total_files_found}")
-        aggregate_lines.append(f"Suspicious artifacts found: {len(scored_files)}")
-        aggregate_lines.append(f"Presenting top {len(top_suspects)} suspects (Metadata Only):\n")
-
-        file_meta_list = []
-        for rank, (score, justifications, fpath) in enumerate(top_suspects, start=1):
-            ext   = os.path.splitext(fpath)[1].lower()
-            size  = 0
-            mtime_str = "unknown"
-            sha256_val = ""
-            try:
-                stat_info = os.stat(fpath)
-                size = stat_info.st_size
-                mtime_str = datetime.fromtimestamp(stat_info.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
-                
-                h = hashlib.sha256()
-                with open(fpath, "rb") as fh:
-                    for chunk in iter(lambda: fh.read(65536), b""):
-                        h.update(chunk)
-                sha256_val = h.hexdigest().lower()
-            except OSError:
-                pass
-
-            # ── Metadata Only Extract ─────────────────────────────────────────
-            content = "[CACHE FILE METADATA ONLY - NO RAW CONTENT EXTRACTED]\n"
-            if ext in (".exe", ".dll", ".ps1", ".bat", ".cmd", ".vbs", ".js"):
-                content = self._extract_text(fpath)
-
-            justification_text = "  " + "\n  ".join(
-                f"[{j+1}] {reason}" for j, reason in enumerate(justifications)
-            ) if justifications else "  [No specific rule triggered]"
+            justification_text = "  " + "\n  ".join(f"[{j+1}] {r}" for j, r in enumerate(justifications)) if justifications else "  [No specific rule triggered]"
 
             block = (
-                f"--- FILE #{rank} (Suspicion Score: {score}) ---\n"
+                f"--- ITEM #{rank} (Suspicion Score: {score}) ---\n"
                 f"Path      : {fpath}\n"
                 f"Extension : {ext}\n"
                 f"Size      : {size} bytes\n"
@@ -1341,16 +1153,12 @@ class CyberAPI:
             )
             aggregate_lines.append(block)
 
-            file_meta_list.append({
-                "rank": rank,
-                "score": score,
-                "path": fpath,
-                "extension": ext,
-                "size": size,
-                "modified": mtime_str,
-                "justification": justifications,
-                "sha256": sha256_val,
-            })
+        if config.get("downloads_desktop", True):
+            aggregate_lines.append(self._scan_browser_shortcuts())
+        if config.get("scheduled_tasks", True):
+            aggregate_lines.append(self._scan_scheduled_tasks())
+        if config.get("event_logs", True):
+            aggregate_lines.append(self._query_powershell_logs())
 
         raw_data = "\n".join(aggregate_lines)
         _report_progress("AI_THINKING", 65, "")
@@ -1361,7 +1169,7 @@ class CyberAPI:
             result_obj = json.loads(ai_result)
         except (json.JSONDecodeError, TypeError):
             return json.dumps({
-                "error": "The AI response was not valid JSON. The model may still be warming up — please retry.",
+                "error": "The AI response was not valid JSON. Please retry.",
                 "raw_response": ai_result,
             }, ensure_ascii=False)
 
@@ -1369,7 +1177,6 @@ class CyberAPI:
             return json.dumps(result_obj, ensure_ascii=False)
 
         scanned_dirs = _deduplicate_dirs(visited_roots)
-
         result_obj["scanned_files"]         = file_meta_list
         result_obj["total_suspicious"]      = len(scored_files)
         result_obj["total_files_scanned"]   = total_files_found
@@ -1983,19 +1790,8 @@ class PresetAPIHandler(BaseHTTPRequestHandler):
             post_data = self.rfile.read(content_length)
             payload = json.loads(post_data.decode('utf-8'))
             
-            if payload.get("preset") == "bank-lab" and GLOBAL_API:
-                # Trigger the preset synchronously to hold the connection
-                # and return the final JSON payload directly back to React fetch()
-                result_json = GLOBAL_API._do_run_bank_lab_preset()
-                
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(result_json.encode('utf-8'))
-                return
-            elif payload.get("preset") == "cache-triage" and GLOBAL_API:
-                result_json = GLOBAL_API._do_run_cache_triage_preset()
+            if payload.get("preset") == "unified" and GLOBAL_API:
+                result_json = GLOBAL_API._do_run_unified_scan(payload.get("config", {}))
                 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')

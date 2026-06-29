@@ -99,29 +99,68 @@ function Header({ aiStatus }) {
   );
 }
 
-function ScanControl({ folderPath, setFolderPath, onScan, onPresetScan, onCacheTriageScan, loading, aiStatus }) {
+function ScanControl({ folderPath, setFolderPath, onScan, onUnifiedScan, loading, aiStatus }) {
+  const [scanConfig, setScanConfig] = useState({
+    downloads_desktop: true,
+    temp_folders: true,
+    browser_cache: true,
+    registry: true,
+    scheduled_tasks: true,
+    event_logs: true
+  });
+
+  const configOptions = [
+    { key: 'downloads_desktop', label: 'Downloads & Desktop' },
+    { key: 'temp_folders', label: 'Temp Folders' },
+    { key: 'browser_cache', label: 'Browser Cache (Chrome, Edge, Firefox, Brave, Opera)' },
+    { key: 'registry', label: 'Registry (Persistence Keys)' },
+    { key: 'scheduled_tasks', label: 'Scheduled Tasks' },
+    { key: 'event_logs', label: 'Event Logs (PowerShell)' }
+  ];
+
   return (
     <div className="glass-card rounded-2xl border border-slate-800 p-6 space-y-6">
       
-      {/* MACRO ACTION BUTTON */}
-      <div className="flex flex-col gap-3">
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Icons.Shield />
+          <h2 className="text-sm font-bold tracking-widest text-slate-300 uppercase">Unified Scan Configuration</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {configOptions.map(({ key, label }) => (
+            <label
+              key={key}
+              className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                scanConfig[key]
+                  ? 'bg-purple-900/20 border-purple-500/50 hover:bg-purple-900/30'
+                  : 'bg-slate-900/50 border-slate-800 hover:bg-slate-800/80 text-slate-400'
+              }`}
+            >
+              <input 
+                type="checkbox"
+                className="hidden"
+                checked={scanConfig[key]}
+                onChange={() => setScanConfig(prev => ({ ...prev, [key]: !prev[key] }))}
+              />
+              <div className={`flex items-center justify-center w-5 h-5 rounded border ${
+                scanConfig[key] ? 'bg-purple-500 border-purple-500 text-white' : 'bg-slate-950 border-slate-700'
+              }`}>
+                {scanConfig[key] && <Icons.Check size={14} />}
+              </div>
+              <span className="text-sm font-semibold tracking-wide">{label}</span>
+            </label>
+          ))}
+        </div>
+
         <button
-          onClick={onPresetScan}
+          onClick={() => onUnifiedScan(scanConfig)}
           disabled={loading || aiStatus !== 'ready'}
-          className="w-full relative px-6 py-4 rounded-xl font-black text-sm tracking-widest uppercase text-white bg-gradient-to-r from-purple-600 to-indigo-700 border-2 border-purple-500 hover:from-purple-500 hover:to-indigo-600 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 overflow-hidden group"
+          className="mt-2 w-full relative px-6 py-4 rounded-xl font-black text-sm tracking-widest uppercase text-white bg-gradient-to-r from-purple-600 to-indigo-700 border-2 border-purple-500 hover:from-purple-500 hover:to-indigo-600 focus:outline-none focus:ring-4 focus:ring-purple-500/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 overflow-hidden group"
         >
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
           <span className="relative z-10 text-xl">🎯</span>
-          <span className="relative z-10 drop-shadow-md">RUN LAB AUTOMATED INCIDENT PRESET (DOWNLOADS, DESKTOP, CHROME CACHE, REGISTRY, TASKS, EVENT LOGS, TEMPS)</span>
-        </button>
-        <button
-          onClick={onCacheTriageScan}
-          disabled={loading || aiStatus !== 'ready'}
-          className="w-full relative px-6 py-4 rounded-xl font-black text-sm tracking-widest uppercase text-white bg-gradient-to-r from-cyan-600 to-blue-700 border-2 border-cyan-500 hover:from-cyan-500 hover:to-blue-600 focus:outline-none focus:ring-4 focus:ring-cyan-500/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 overflow-hidden group"
-        >
-          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-          <span className="relative z-10 text-xl">🔍</span>
-          <span className="relative z-10 drop-shadow-md">DEEP BROWSER CACHE TRIAGE (CHROME & EDGE ONLY)</span>
+          <span className="relative z-10 drop-shadow-md">DEFAULT SCAN (DYNAMIC LAB PRESET)</span>
         </button>
       </div>
 
@@ -694,7 +733,7 @@ export default function App() {
     }
   };
 
-  const handlePresetScan = async () => {
+  const handleUnifiedScan = async (config) => {
     setLoading(true);
     setError(null);
     setScanResult(null);
@@ -702,7 +741,7 @@ export default function App() {
     setProgress({ phase: 'INIT', percent: 0, file: '' });
 
     try {
-      const raw = await callPython('run_bank_lab_preset');
+      const raw = await callPython('run_unified_scan', JSON.stringify(config));
       const obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
 
       if (obj.error) {
@@ -711,7 +750,6 @@ export default function App() {
         return;
       }
 
-      // If started successfully, begin polling
       const pollId = setInterval(async () => {
         try {
           const pRaw = await callPython('get_progress');
@@ -740,58 +778,7 @@ export default function App() {
       }, 600);
 
     } catch (err) {
-      setError(`Preset scan error: ${err.message}`);
-      setLoading(false);
-    }
-  };
-
-  const handleCacheTriageScan = async () => {
-    setLoading(true);
-    setError(null);
-    setScanResult(null);
-    setCurrentFile('');
-    setProgress({ phase: 'INIT', percent: 0, file: '' });
-
-    try {
-      const raw = await callPython('run_cache_triage_preset');
-      const obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
-
-      if (obj.error) {
-        setLoading(false);
-        setError(obj.error);
-        return;
-      }
-
-      // If started successfully, begin polling
-      const pollId = setInterval(async () => {
-        try {
-          const pRaw = await callPython('get_progress');
-          const prog = typeof pRaw === 'string' ? JSON.parse(pRaw) : pRaw;
-          if (prog && prog.phase) {
-            setProgress({ phase: prog.phase, percent: Math.round(prog.percent || 0), file: prog.file || '' });
-            if (prog.file) setCurrentFile(prog.file);
-
-            if (prog.phase === 'COMPLETE' || prog.phase === 'ERROR') {
-              clearInterval(pollId);
-              setLoading(false);
-              
-              let resultObj = null;
-              if (prog.result) {
-                try { resultObj = typeof prog.result === 'string' ? JSON.parse(prog.result) : prog.result; } catch (e) {}
-              }
-              
-              if (prog.phase === 'ERROR' || (resultObj && resultObj.error)) {
-                setError(resultObj ? resultObj.error : "Unknown error occurred.");
-              } else if (resultObj) {
-                setScanResult(resultObj);
-              }
-            }
-          }
-        } catch (_) {}
-      }, 600);
-
-    } catch (err) {
-      setError(`Cache triage error: ${err.message}`);
+      setError(`Unified scan error: ${err.message}`);
       setLoading(false);
     }
   };
@@ -814,8 +801,7 @@ export default function App() {
             folderPath={folderPath}
             setFolderPath={setFolderPath}
             onScan={handleScan}
-            onPresetScan={handlePresetScan}
-            onCacheTriageScan={handleCacheTriageScan}
+            onUnifiedScan={handleUnifiedScan}
             loading={loading}
             aiStatus={aiStatus}
           />
