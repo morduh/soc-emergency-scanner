@@ -75,6 +75,9 @@ The scanner is 100% offline. No internet needed once deployed. It auto-detects t
 
 - **Automated "Bank Lab" Preset**: A single-click macro that instantly traverses the 8 most critical system locations for stealthy malware.
 - **Click-to-Open Forensics**: Click the "Open" button next to any suspicious file in the UI to instantly open Windows File Explorer and highlight the file without safely executing it. Registry paths will automatically open `regedit` to the exact key.
+- **Evidence "Proof" Blocks**: View raw extracted forensic data (e.g., suspicious scripts, execution arguments) directly in the AI's incident timeline for verifiable reporting.
+- **Intelligent Scan Optimization**: Automatically bypasses high-volume, benign directories (like browser caches) to ensure lightning-fast traversal and minimize token bloat.
+- **Robust AI Parsing Pipeline**: Built-in JSON sanitization engine seamlessly handles Windows backslashes and complex escape characters to prevent AI hallucination and ensure reliable UI generation.
 - **Live System Telemetry**: Instead of just scanning dormant files, the scanner actively hunts for reverse shells (`netstat`), suspicious persistence (`schtasks`), and memory injection keywords via PowerShell Event Logs (`Get-WinEvent`).
 - **UI Safety Locks**: The interface is hard-locked until the offline AI engine completes its background initialization and model loading.
 
