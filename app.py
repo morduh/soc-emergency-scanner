@@ -381,6 +381,39 @@ def _deduplicate_dirs(visited_roots: set) -> list:
 
 
 # ---------------------------------------------------------------------------
+# Helper: Close a JSON string truncated mid-stream by a context window limit
+# ---------------------------------------------------------------------------
+
+def _close_truncated_json(text: str) -> str:
+    in_string = False
+    escape_next = False
+    depth_stack = []
+    for c in text:
+        if escape_next:
+            escape_next = False
+            continue
+        if c == '\\' and in_string:
+            escape_next = True
+            continue
+        if c == '"':
+            in_string = not in_string
+            continue
+        if not in_string:
+            if c in ('{', '['):
+                depth_stack.append(c)
+            elif c == '}' and depth_stack and depth_stack[-1] == '{':
+                depth_stack.pop()
+            elif c == ']' and depth_stack and depth_stack[-1] == '[':
+                depth_stack.pop()
+    closing = ''
+    if in_string:
+        closing += '"'
+    for opener in reversed(depth_stack):
+        closing += '}' if opener == '{' else ']'
+    return text + closing
+
+
+# ---------------------------------------------------------------------------
 # CyberAPI — Methods exposed to the JavaScript frontend via PyWebView
 # ---------------------------------------------------------------------------
 
@@ -1598,9 +1631,11 @@ class CyberAPI:
         llama-server, so the model receives correctly formatted instructions
         and produces structured JSON output instead of echoing the input.
         """
-        # Enforce context size limit (roughly 20,000 characters) to prevent llama-server 400 errors (especially from hex dumps)
-        if len(raw_data) > 20000:
-            raw_data = raw_data[:20000] + "\n\n[WARNING: DATA TRUNCATED DUE TO CONTEXT SIZE LIMIT]"
+        # Hard cap at 12,000 chars: Windows paths/UUIDs/hashes tokenize at ~1.35 chars/token,
+        # so 20,000 chars ≈ 14,800 tokens — nearly the entire 16,384-token context window.
+        # 12,000 chars ≈ 8,900 tokens, leaving comfortable headroom for the AI to respond.
+        if len(raw_data) > 12000:
+            raw_data = raw_data[:12000] + "\n\n[DATA TRUNCATED TO FIT CONTEXT WINDOW]"
 
         payload = {
             "messages": [
@@ -1626,6 +1661,7 @@ class CyberAPI:
             )
             response.raise_for_status()
             
+            finish_reason = None
             raw_text = ""
             for line in response.iter_lines():
                 if line:
@@ -1636,12 +1672,19 @@ class CyberAPI:
                             break
                         try:
                             chunk = json.loads(data_str)
-                            delta = chunk.get("choices", [{}])[0].get("delta", {})
+                            choice = chunk.get("choices", [{}])[0]
+                            delta = choice.get("delta", {})
                             content = delta.get("content")
                             if content is not None:
                                 raw_text += content
+                            fr = choice.get("finish_reason")
+                            if fr is not None:
+                                finish_reason = fr
                         except json.JSONDecodeError:
                             pass
+
+            if finish_reason == "length":
+                print("[WARN] AI response truncated by context window limit (finish_reason=length).")
             
             raw_text = raw_text.strip()
 
@@ -1709,6 +1752,38 @@ class CyberAPI:
                 print(f"[WARN] Candidate text was: {json_candidate[:300]}")
             # ──────────────────────────────────────────────────────────────────
 
+            # ── Parse attempt 3: truncation recovery ─────────────────────────
+            if finish_reason == "length" and start_idx != -1:
+                try:
+                    recovered = _close_truncated_json(raw_text[start_idx:])
+                    # Run the same backslash sanitizer on the recovered text
+                    fixed_recovered = ""
+                    in_str2 = False
+                    ri = 0
+                    while ri < len(recovered):
+                        c = recovered[ri]
+                        if c == '"' and (ri == 0 or recovered[ri-1] != '\\'):
+                            in_str2 = not in_str2
+                        if in_str2 and c == '\\':
+                            if ri + 1 < len(recovered):
+                                nc = recovered[ri+1]
+                                if nc in ['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u']:
+                                    fixed_recovered += c + nc
+                                else:
+                                    fixed_recovered += '\\\\' + nc
+                                ri += 1
+                            else:
+                                fixed_recovered += '\\\\'
+                        else:
+                            fixed_recovered += c
+                        ri += 1
+                    json.loads(fixed_recovered)
+                    print("[INFO] Recovered partial JSON from truncated AI response.")
+                    return fixed_recovered
+                except (json.JSONDecodeError, Exception) as e:
+                    print(f"[WARN] Truncation recovery failed: {e}")
+            # ──────────────────────────────────────────────────────────────────
+
             raise json.JSONDecodeError("Could not parse AI response", json_candidate, 0)
 
         except requests.exceptions.ConnectionError:
@@ -1724,6 +1799,10 @@ class CyberAPI:
                 "error": f"HTTP error from AI server: {exc}"
             }, ensure_ascii=False)
         except json.JSONDecodeError:
+            if finish_reason == "length":
+                return json.dumps({
+                    "error": "The scan data exceeded the AI context window — the response was cut off before completion. Try disabling some scan modules (e.g. Event Logs or Browser Cache) to reduce input size, then retry."
+                }, ensure_ascii=False)
             return json.dumps({
                 "error": "The AI returned a malformed response that could not be parsed as JSON. The model may still be warming up — please retry."
             }, ensure_ascii=False)
